@@ -3,7 +3,7 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
-        <RuntimeIdentifiers>win-x64;linux-x64;linux-arm64</RuntimeIdentifiers>
+        <RuntimeIdentifiers>win-x64;linux-x64;linux-arm64;osx-arm64;osx-x64</RuntimeIdentifiers>
         <PublishSingleFile Condition="'$(NO_SINGLE_FILE)' != '1'">true</PublishSingleFile>
         <SelfContained Condition="'$(Configuration)' == 'Release'">true</SelfContained>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
@@ -11,11 +11,15 @@
         <Nullable>enable</Nullable>
         <PublishDir Condition="'$(RuntimeIdentifier)' == 'linux-x64'">..\out-linux-x64\</PublishDir>
         <PublishDir Condition="'$(RuntimeIdentifier)' == 'linux-arm64'">..\out-linux-arm64\</PublishDir>
+        <PublishDir Condition="'$(RuntimeIdentifier)' == 'osx-arm64'">..\out-osx-arm64\</PublishDir>
+        <PublishDir Condition="'$(RuntimeIdentifier)' == 'osx-x64'">..\out-osx-x64\</PublishDir>
         <PublishDir Condition="'$(RuntimeIdentifier)' == 'win-x64'">..\out-win-x64\</PublishDir>
         <NoWarn>ERP022,EPC12</NoWarn>
         <Platforms>AnyCPU</Platforms>
+        <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('OSX')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'Arm64'">osx-arm64</RuntimeIdentifier>
+        <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('OSX')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'X64'">osx-x64</RuntimeIdentifier>
         <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
-        <DefineConstants Condition="'$(RuntimeIdentifier)' == 'linux-arm64'">DISABLE_STEAM</DefineConstants>
+        <DefineConstants Condition="'$(RuntimeIdentifier)' == 'linux-arm64' or '$(RuntimeIdentifier)' == 'osx-arm64'">DISABLE_STEAM</DefineConstants>
         <PathMap>$(MSBuildProjectDirectory)=$(MSBuildProjectName)</PathMap>
         <InvariantGlobalization>true</InvariantGlobalization>
         <ApplicationIcon>Assets/assettoserver.ico</ApplicationIcon>
@@ -102,6 +106,29 @@
         <ContentWithTargetPath Include="Redist/libcsp_xxhash3_arm64.so">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <TargetPath>libcsp_xxhash3.so</TargetPath>
+        </ContentWithTargetPath>
+    </ItemGroup>
+    <ItemGroup Condition="'$(RuntimeIdentifier)' == 'osx-arm64'">
+        <ContentWithTargetPath Include="Redist/libcsp_xxhash3.dylib">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <TargetPath>libcsp_xxhash3.dylib</TargetPath>
+        </ContentWithTargetPath>
+    </ItemGroup>
+    <ItemGroup Condition="'$(RuntimeIdentifier)' == 'osx-x64'">
+        <ContentWithTargetPath Include="Redist/libsteam_api.dylib">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <TargetPath>libsteam_api.dylib</TargetPath>
+        </ContentWithTargetPath>
+        <ContentWithTargetPath Include="Redist/steam_appid.txt">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <TargetPath>steam_appid.txt</TargetPath>
+        </ContentWithTargetPath>
+        <Reference Include="Facepunch.Steamworks.Posix">
+            <HintPath>..\Redist\Facepunch.Steamworks.Posix.dll</HintPath>
+        </Reference>
+        <ContentWithTargetPath Include="Redist/libcsp_xxhash3_x64.dylib">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <TargetPath>libcsp_xxhash3.dylib</TargetPath>
         </ContentWithTargetPath>
     </ItemGroup>
     <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x64'">

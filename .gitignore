@@ -363,4 +363,8 @@ MigrationBackup/
 FodyWeavers.xsd
 
 out-linux-*
+out-osx-*
 out-win-*
+
+.idea
+.vscode
