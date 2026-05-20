@@ -1,0 +1,8 @@
+locale: zh-CN
+fallback: en-US
+strings:
+  plugin.report.replay.cooldown: "请稍候再提交下一份重放。"
+  plugin.report.replay.received: "重放已收到。\n使用 /report <原因> 将此重放提交给管理员。"
+  plugin.report.cmd.no_replay: "未提交重放！按 Ctrl+Shift+S 发送一份重放（需要 CSP 0.1.76+）"
+  plugin.report.cmd.already_submitted: "你已经提交过上一份重放了。"
+  plugin.report.cmd.submitted: "你的举报已提交。"

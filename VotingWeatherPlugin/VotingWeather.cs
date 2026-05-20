@@ -16,6 +16,7 @@ public class VotingWeather : CriticalBackgroundService, IAssettoServerAutostart
     private readonly IWeatherTypeProvider _weatherTypeProvider;
     private readonly EntryCarManager _entryCarManager;
     private readonly VotingWeatherConfiguration _configuration;
+    private readonly ILocalizationService _l10n;
     private readonly List<WeatherFxType> _weathers;
     private readonly List<ACTcpClient> _alreadyVoted = new();
     private readonly List<WeatherChoice> _availableWeathers = new();
@@ -28,19 +29,23 @@ public class VotingWeather : CriticalBackgroundService, IAssettoServerAutostart
         public int Votes { get; set; }
     }
 
-    public VotingWeather(VotingWeatherConfiguration configuration, WeatherManager weatherManager, IWeatherTypeProvider weatherTypeProvider, EntryCarManager entryCarManager, IHostApplicationLifetime applicationLifetime) : base(applicationLifetime)
+    public VotingWeather(VotingWeatherConfiguration configuration, WeatherManager weatherManager, IWeatherTypeProvider weatherTypeProvider, EntryCarManager entryCarManager, IHostApplicationLifetime applicationLifetime, ILocalizationService l10n) : base(applicationLifetime)
     {
         _configuration = configuration;
         _weatherManager = weatherManager;
         _weatherTypeProvider = weatherTypeProvider;
         _entryCarManager = entryCarManager;
+        _l10n = l10n;
 
         if (!_configuration.BlacklistedWeathers.Contains(WeatherFxType.None))
         {
             _configuration.BlacklistedWeathers.Add(WeatherFxType.None);
         }
-        
+
         _weathers = Enum.GetValues<WeatherFxType>().Except(_configuration.BlacklistedWeathers).ToList();
+
+        var pluginDir = Path.GetDirectoryName(typeof(VotingWeather).Assembly.Location)!;
+        _l10n.RegisterSource(Path.Combine(pluginDir, "lang"), "voteweather");
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -67,19 +72,19 @@ public class VotingWeather : CriticalBackgroundService, IAssettoServerAutostart
     {
         if (!_votingOpen)
         {
-            client.SendPacket(new ChatMessage { SessionId = 255, Message = "There is no ongoing weather vote." });
+            client.SendPacket(new ChatMessage { SessionId = 255, Message = _l10n.Get("plugin.voteweather.cmd.no_vote") });
             return;
         }
 
         if (choice >= _availableWeathers.Count || choice < 0)
         {
-            client.SendPacket(new ChatMessage { SessionId = 255, Message = "Invalid choice." });
+            client.SendPacket(new ChatMessage { SessionId = 255, Message = _l10n.Get("plugin.voteweather.cmd.invalid_choice") });
             return;
         }
 
         if (_alreadyVoted.Contains(client))
         {
-            client.SendPacket(new ChatMessage { SessionId = 255, Message = "You voted already." });
+            client.SendPacket(new ChatMessage { SessionId = 255, Message = _l10n.Get("plugin.voteweather.cmd.already_voted") });
             return;
         }
 
@@ -88,7 +93,7 @@ public class VotingWeather : CriticalBackgroundService, IAssettoServerAutostart
         var votedWeather = _availableWeathers[choice];
         votedWeather.Votes++;
 
-        client.SendPacket(new ChatMessage { SessionId = 255, Message = $"Your vote for {votedWeather.Weather} has been counted." });
+        client.SendPacket(new ChatMessage { SessionId = 255, Message = _l10n.Get("plugin.voteweather.cmd.vote_counted", new { weather = votedWeather.Weather }) });
     }
 
     private async Task UpdateAsync(CancellationToken stoppingToken)
@@ -100,16 +105,16 @@ public class VotingWeather : CriticalBackgroundService, IAssettoServerAutostart
 
         var weathersLeft = new List<WeatherFxType>(_weathers);
 
-        _entryCarManager.BroadcastPacket(new ChatMessage { SessionId = 255, Message = "Vote for next weather:" });
+        _entryCarManager.BroadcastPacket(new ChatMessage { SessionId = 255, Message = _l10n.Get("plugin.voteweather.broadcast.header") });
         for (int i = 0; i < _configuration.NumChoices; i++)
         {
             if (weathersLeft.Count < 1) break;
-            
+
             var nextWeather = weathersLeft[Random.Shared.Next(weathersLeft.Count)];
             _availableWeathers.Add(new WeatherChoice { Weather = nextWeather, Votes = 0 });
             weathersLeft.Remove(nextWeather);
 
-            _entryCarManager.BroadcastPacket(new ChatMessage { SessionId = 255, Message = $" /w {i} - {nextWeather}" });
+            _entryCarManager.BroadcastPacket(new ChatMessage { SessionId = 255, Message = _l10n.Get("plugin.voteweather.broadcast.option", new { index = i, weather = nextWeather }) });
         }
 
         _votingOpen = true;
@@ -122,7 +127,7 @@ public class VotingWeather : CriticalBackgroundService, IAssettoServerAutostart
         var winner = weathers[Random.Shared.Next(weathers.Count)];
         var winnerType = _weatherTypeProvider.GetWeatherType(winner);
 
-        _entryCarManager.BroadcastPacket(new ChatMessage { SessionId = 255, Message = $"Weather vote ended. Next weather: {winner}" });
+        _entryCarManager.BroadcastPacket(new ChatMessage { SessionId = 255, Message = _l10n.Get("plugin.voteweather.broadcast.result", new { weather = winner }) });
 
         _weatherManager.SetWeather(new WeatherData(last.Type, winnerType)
         {

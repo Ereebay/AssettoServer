@@ -137,4 +137,11 @@
         <None Remove="Assets\srp-logo-new.png" />
         <EmbeddedResource Include="Assets\srp-logo-new.png" />
     </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="cfg\lang\*.yml">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
+    </ItemGroup>
 </Project>

@@ -1,0 +1,73 @@
+locale: zh-CN
+fallback: en-US
+strings:
+  # === 生命周期与系统广播 ===
+  server.shutdown_broadcast: "*** 服务器即将关闭 ***"
+
+  # === 踢出 / 封禁 — 广播 ===
+  kick.broadcast_with_reason: "{name} 被踢出服务器，原因：{reason}。"
+  kick.broadcast_no_reason: "{name} 被踢出服务器。"
+  ban.broadcast_with_reason: "{name} 被服务器封禁，原因：{reason}。"
+  ban.broadcast_no_reason: "{name} 被服务器封禁。"
+  kick.broadcast_checksum_failed: "{name} 因地图或车辆校验失败，已被踢出，请重新下载模组。"
+
+  # === 踢出 / 封禁 — 本人 ===
+  kick.self_with_reason: "你被踢出，原因：{reason}"
+  ban.self_with_reason: "你被封禁，原因：{reason}"
+  ban.self_no_reason: "你已被服务器封禁"
+  kick.plugin_default: "你已被踢出。"
+
+  # === 挂机 ===
+  afk.warning_1min: "你将在 1 分钟后因挂机被踢出。"
+
+  # === 管理员模块 ===
+  cmd.kick.cannot_self: "不能踢自己。"
+  cmd.kick.cannot_admin: "不能踢管理员"
+  cmd.kick.steam_profile: "{name} 的 Steam 主页：https://steamcommunity.com/profiles/{guid}"
+  cmd.ban.cannot_self: "不能封禁自己。"
+  cmd.ban.cannot_admin: "不能封禁管理员。"
+  cmd.ban.steam_profile: "{name} 的 Steam 主页：https://steamcommunity.com/profiles/{guid}"
+  cmd.ban.family_sharing_notice: "{name} 正在使用 Steam 家庭共享，将封禁游戏拥有者 https://steamcommunity.com/profiles/{guid}"
+  cmd.pit.self: "你已被传送至维修区。"
+  cmd.pit.broadcast: "{name} 已被传送至维修区。"
+  cmd.settime.success: "时间已设置。"
+  cmd.settime.invalid_format: "时间格式无效。用法：/settime 15:31"
+  cmd.setweather.success: "天气配置已设置。"
+  cmd.setweather.not_found: "找不到此 id 对应的天气配置。"
+  cmd.cspweather.list_header: "可用天气："
+  cmd.cspweather.list_item: " - {type}"
+  cmd.setcspweather.success: "天气已设置。"
+  cmd.setcspweather.not_found: "没有名为 '{name}' 的天气，使用 /cspweather 查看可用天气列表。"
+  cmd.distance.result: "距离：{distance}"
+  cmd.forcelights.enabled: "{name} 已强制开启车灯。"
+  cmd.forcelights.disabled: "{name} 已关闭强制开启车灯。"
+  cmd.whois.info: "IP：{ip}\n主页：https://steamcommunity.com/profiles/{guid}\nPing：{ping}ms"
+  cmd.whois.position: "位置：{position}\n速度：{velocity}kmh"
+  cmd.whois.family_sharing_owner: "Steam 家庭共享拥有者：https://steamcommunity.com/profiles/{guid}"
+  cmd.restrict.success: "进气限制与配重已设置。"
+  cmd.ballast.syntax_error: "SYNTAX ERROR: Use 'ballast [driver numeric id] [kg]'"
+  cmd.set.success: "属性 {key} 已设置为 {value}"
+  cmd.set.failed: "无法设置属性 {key}"
+  cmd.set.error: "{error}"
+  cmd.whitelist.added: "SteamID {guid} 已加入白名单"
+  cmd.say.broadcast: "[控制台] {message}"
+
+  # === 通用模块 ===
+  cmd.ping.result: "Pong！{ping}ms。"
+  cmd.time.result: "当前时间：{time}。"
+  cmd.admin.success: "你已成为本服务器的管理员"
+  cmd.admin.refused: "命令被拒绝"
+
+  # === AI 交通模块 ===
+  cmd.setaioverbooking.ai_disabled: "AI 已禁用"
+  cmd.setaioverbooking.success: "AI 超额预订已设置为 {count}"
+
+  # === 命令框架 ===
+  cmd.execution_error: "执行此命令时发生错误。"
+  cmd.permission_denied_admin: "你不是管理员。"
+
+  # === 连接 / 鉴权过滤 ===
+  auth.steam_failed: "Steam 鉴权失败。"
+  auth.not_whitelisted: "你不在本服务器的白名单中"
+  auth.empty_name: "驾驶员名称不能为空。"
+  auth.missing_csp_features: "缺少 CSP 功能。请更新 CSP 和/或 Content Manager。"

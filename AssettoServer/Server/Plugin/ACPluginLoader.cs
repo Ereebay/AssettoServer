@@ -29,7 +29,7 @@ public class ACPluginLoader
         }
         
         string pluginsDir = Path.Combine(AppContext.BaseDirectory, "plugins");
-        ScanDirectory(pluginsDir);
+        if (Directory.Exists(pluginsDir)) ScanDirectory(pluginsDir);
     }
 
     public void ScanDirectory(string path)

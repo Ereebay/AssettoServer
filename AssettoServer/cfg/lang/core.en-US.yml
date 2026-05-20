@@ -1,0 +1,72 @@
+locale: en-US
+strings:
+  # === Lifecycle & system broadcast ===
+  server.shutdown_broadcast: "*** Server shutting down ***"
+
+  # === Kick / ban — broadcast ===
+  kick.broadcast_with_reason: "{name} has been kicked from the server for {reason}."
+  kick.broadcast_no_reason: "{name} has been kicked from the server."
+  ban.broadcast_with_reason: "{name} has been banned from the server for {reason}."
+  ban.broadcast_no_reason: "{name} has been banned from the server."
+  kick.broadcast_checksum_failed: "{name} failed the checksum check and has been kicked."
+
+  # === Kick / ban — self ===
+  kick.self_with_reason: "You have been kicked for {reason}"
+  ban.self_with_reason: "You have been banned for {reason}"
+  ban.self_no_reason: "You have been banned from the server"
+  kick.plugin_default: "You have been kicked."
+
+  # === AFK ===
+  afk.warning_1min: "You will be kicked in 1 minute for being AFK."
+
+  # === AdminModule ===
+  cmd.kick.cannot_self: "You cannot kick yourself."
+  cmd.kick.cannot_admin: "You cannot kick an administrator"
+  cmd.kick.steam_profile: "Steam profile of {name}: https://steamcommunity.com/profiles/{guid}"
+  cmd.ban.cannot_self: "You cannot ban yourself."
+  cmd.ban.cannot_admin: "You cannot ban an administrator."
+  cmd.ban.steam_profile: "Steam profile of {name}: https://steamcommunity.com/profiles/{guid}"
+  cmd.ban.family_sharing_notice: "{name} is using Steam Family Sharing, banning game owner https://steamcommunity.com/profiles/{guid}"
+  cmd.pit.self: "You have been teleported to the pits."
+  cmd.pit.broadcast: "{name} has been teleported to the pits."
+  cmd.settime.success: "Time has been set."
+  cmd.settime.invalid_format: "Invalid time format. Usage: /settime 15:31"
+  cmd.setweather.success: "Weather configuration has been set."
+  cmd.setweather.not_found: "There is no weather configuration with this id."
+  cmd.cspweather.list_header: "Available weathers:"
+  cmd.cspweather.list_item: " - {type}"
+  cmd.setcspweather.success: "Weather has been set."
+  cmd.setcspweather.not_found: "No weather with name '{name}', use /cspweather for a list of available weathers."
+  cmd.distance.result: "Distance: {distance}"
+  cmd.forcelights.enabled: "{name}'s lights will be forced on."
+  cmd.forcelights.disabled: "{name}'s lights will not be forced on."
+  cmd.whois.info: "IP: {ip}\nProfile: https://steamcommunity.com/profiles/{guid}\nPing: {ping}ms"
+  cmd.whois.position: "Position: {position}\nVelocity: {velocity}kmh"
+  cmd.whois.family_sharing_owner: "Steam Family Sharing Owner: https://steamcommunity.com/profiles/{guid}"
+  cmd.restrict.success: "Restrictor and ballast set."
+  cmd.ballast.syntax_error: "SYNTAX ERROR: Use 'ballast [driver numeric id] [kg]'"
+  cmd.set.success: "Property {key} set to {value}"
+  cmd.set.failed: "Could not set property {key}"
+  cmd.set.error: "{error}"
+  cmd.whitelist.added: "SteamID {guid} was added to the whitelist"
+  cmd.say.broadcast: "CONSOLE: {message}"
+
+  # === GeneralModule ===
+  cmd.ping.result: "Pong! {ping}ms."
+  cmd.time.result: "It is currently {time}."
+  cmd.admin.success: "You are now Admin for this server"
+  cmd.admin.refused: "Command refused"
+
+  # === AiTrafficModule ===
+  cmd.setaioverbooking.ai_disabled: "AI disabled"
+  cmd.setaioverbooking.success: "AI overbooking set to {count}"
+
+  # === Command framework ===
+  cmd.execution_error: "An error occurred while executing this command."
+  cmd.permission_denied_admin: "You are not an administrator."
+
+  # === Connection / auth filters ===
+  auth.steam_failed: "Steam authentication failed."
+  auth.not_whitelisted: "You are not whitelisted on this server"
+  auth.empty_name: "Driver name cannot be empty."
+  auth.missing_csp_features: "Missing CSP features. Please update CSP and/or Content Manager."
