@@ -14,12 +14,14 @@ using AssettoServer.Server.Blacklist;
 using AssettoServer.Server.CMContentProviders;
 using AssettoServer.Server.Configuration;
 using AssettoServer.Server.GeoParams;
+using AssettoServer.Server.Localization;
 using AssettoServer.Server.OpenSlotFilters;
 using AssettoServer.Server.Plugin;
 using AssettoServer.Server.TrackParams;
 using AssettoServer.Server.UserGroup;
 using AssettoServer.Server.Weather;
 using AssettoServer.Server.Whitelist;
+using AssettoServer.Shared.Services;
 using Autofac;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
@@ -87,6 +89,7 @@ public class Startup
         builder.RegisterType<ACClientAuthentication>().AsSelf().SingleInstance().AutoActivate();
         builder.RegisterType<HttpInfoCache>().AsSelf().As<IAssettoServerAutostart>().SingleInstance();
         builder.RegisterType<DefaultCMContentProvider>().As<ICMContentProvider>().SingleInstance();
+        builder.RegisterType<YamlLocalizationService>().As<ILocalizationService>().SingleInstance();
 
         if (_configuration.Extra.EnableLegacyPluginInterface)
         {
