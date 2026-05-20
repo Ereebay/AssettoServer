@@ -1,11 +1,13 @@
 ﻿using AssettoServer.Server;
 using Qmmands;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using AssettoServer.Commands.Attributes;
 using AssettoServer.Server.Configuration;
 using AssettoServer.Server.Weather;
+using AssettoServer.Shared.Services;
 using JetBrains.Annotations;
 
 namespace AssettoServer.Commands.Modules;
@@ -15,20 +17,22 @@ public class GeneralModule : ACModuleBase
 {
     private readonly WeatherManager _weatherManager;
     private readonly ACServerConfiguration _configuration;
+    private readonly ILocalizationService _l10n;
 
-    public GeneralModule(WeatherManager weatherManager, ACServerConfiguration configuration)
+    public GeneralModule(WeatherManager weatherManager, ACServerConfiguration configuration, ILocalizationService l10n)
     {
         _weatherManager = weatherManager;
         _configuration = configuration;
+        _l10n = l10n;
     }
 
     [Command("ping"), RequireConnectedPlayer]
     public void Ping()
-        => Reply($"Pong! {Client!.EntryCar.Ping}ms.");
+        => Reply(_l10n.Get("cmd.ping.result", new { ping = Client!.EntryCar.Ping }));
 
     [Command("time")]
     public void Time()
-        => Reply($"It is currently {_weatherManager.CurrentDateTime:H:mm}.");
+        => Reply(_l10n.Get("cmd.time.result", new { time = _weatherManager.CurrentDateTime.ToString("H:mm", CultureInfo.InvariantCulture) }));
 
 #if DEBUG
     [Command("test")]
@@ -45,10 +49,10 @@ public class GeneralModule : ACModuleBase
         if (password == _configuration.Server.AdminPassword)
         {
             Client!.IsAdministrator = true;
-            Reply("You are now Admin for this server");
+            Reply(_l10n.Get("cmd.admin.success"));
         }
         else
-            Reply("Command refused");
+            Reply(_l10n.Get("cmd.admin.refused"));
     }
 
     [Command("legal")]

@@ -12,6 +12,7 @@ using AssettoServer.Server.Weather.Implementation;
 using AssettoServer.Server.Whitelist;
 using AssettoServer.Shared.Network.Packets.Outgoing;
 using AssettoServer.Shared.Network.Packets.Shared;
+using AssettoServer.Shared.Services;
 using AssettoServer.Shared.Weather;
 using JetBrains.Annotations;
 
@@ -28,8 +29,9 @@ public class AdminModule : ACModuleBase
     private readonly SessionManager _sessionManager;
     private readonly EntryCarManager _entryCarManager;
     private readonly IWhitelistService _whitelist;
+    private readonly ILocalizationService _l10n;
 
-    public AdminModule(IWeatherImplementation weatherImplementation, WeatherManager weatherManager, DefaultWeatherProvider weatherProvider, ACServerConfiguration configuration, SessionManager sessionManager, EntryCarManager entryCarManager, IWhitelistService whitelist)
+    public AdminModule(IWeatherImplementation weatherImplementation, WeatherManager weatherManager, DefaultWeatherProvider weatherProvider, ACServerConfiguration configuration, SessionManager sessionManager, EntryCarManager entryCarManager, IWhitelistService whitelist, ILocalizationService l10n)
     {
         _weatherImplementation = weatherImplementation;
         _weatherManager = weatherManager;
@@ -38,18 +40,19 @@ public class AdminModule : ACModuleBase
         _sessionManager = sessionManager;
         _entryCarManager = entryCarManager;
         _whitelist = whitelist;
+        _l10n = l10n;
     }
 
     [Command("kick", "kick_id")]
     public Task KickAsync(ACTcpClient player, [Remainder] string? reason = null)
     {
         if (player.SessionId == Client?.SessionId)
-            Reply("You cannot kick yourself.");
+            Reply(_l10n.Get("cmd.kick.cannot_self"));
         else if (player.IsAdministrator)
-            Reply("You cannot kick an administrator");
+            Reply(_l10n.Get("cmd.kick.cannot_admin"));
         else
         {
-            Reply($"Steam profile of {player.Name}: https://steamcommunity.com/profiles/{player.Guid}");
+            Reply(_l10n.Get("cmd.kick.steam_profile", new { name = player.Name, guid = player.Guid }));
             return _entryCarManager.KickAsync(player, reason, Client);
         }
 
@@ -60,15 +63,15 @@ public class AdminModule : ACModuleBase
     public Task BanAsync(ACTcpClient player, [Remainder] string? reason = null)
     {
         if (player.SessionId == Client?.SessionId)
-            Reply("You cannot ban yourself.");
+            Reply(_l10n.Get("cmd.ban.cannot_self"));
         else if (player.IsAdministrator)
-            Reply("You cannot ban an administrator.");
+            Reply(_l10n.Get("cmd.ban.cannot_admin"));
         else
         {
-            Reply($"Steam profile of {player.Name}: https://steamcommunity.com/profiles/{player.Guid}");
+            Reply(_l10n.Get("cmd.ban.steam_profile", new { name = player.Name, guid = player.Guid }));
             if (player.OwnerGuid.HasValue && player.Guid != player.OwnerGuid)
             {
-                Reply($"{player.Name} is using Steam Family Sharing, banning game owner https://steamcommunity.com/profiles/{player.OwnerGuid}");
+                Reply(_l10n.Get("cmd.ban.family_sharing_notice", new { name = player.Name, guid = player.OwnerGuid }));
             }
             return _entryCarManager.BanAsync(player, reason, Client);
         }
@@ -80,10 +83,10 @@ public class AdminModule : ACModuleBase
     public void TeleportToPits([Remainder] ACTcpClient player)
     {
         _sessionManager.SendCurrentSession(player);
-        player.SendPacket(new ChatMessage { SessionId = 255, Message = "You have been teleported to the pits." });
+        player.SendPacket(new ChatMessage { SessionId = 255, Message = _l10n.Get("cmd.pit.self") });
 
         if (player.SessionId != Client?.SessionId)
-            Reply($"{player.Name} has been teleported to the pits.");
+            Reply(_l10n.Get("cmd.pit.broadcast", new { name = player.Name }));
     }
 
     [Command("settime")]
@@ -92,11 +95,11 @@ public class AdminModule : ACModuleBase
         if (DateTime.TryParseExact(time, "H:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTime))
         {
             _weatherManager.SetTime((int)dateTime.TimeOfDay.TotalSeconds);
-            Broadcast("Time has been set.");
+            Broadcast(_l10n.Get("cmd.settime.success"));
         }
         else
         {
-            Reply("Invalid time format. Usage: /settime 15:31");
+            Reply(_l10n.Get("cmd.settime.invalid_format"));
         }
     }
 
@@ -105,21 +108,21 @@ public class AdminModule : ACModuleBase
     {
         if (_weatherProvider.SetWeatherConfiguration(weatherId))
         {
-            Reply("Weather configuration has been set.");
+            Reply(_l10n.Get("cmd.setweather.success"));
         }
         else
         {
-            Reply("There is no weather configuration with this id.");
+            Reply(_l10n.Get("cmd.setweather.not_found"));
         }
     }
 
     [Command("cspweather")]
     public void CspWeather()
     {
-        Reply("Available weathers:");
+        Reply(_l10n.Get("cmd.cspweather.list_header"));
         foreach (WeatherFxType weather in Enum.GetValues<WeatherFxType>())
         {
-            Reply($" - {weather}");
+            Reply(_l10n.Get("cmd.cspweather.list_item", new { type = weather }));
         }
     }
 
@@ -129,11 +132,11 @@ public class AdminModule : ACModuleBase
         if (Enum.TryParse(upcomingStr, true, out WeatherFxType upcoming))
         {
             _weatherManager.SetCspWeather(upcoming, duration);
-            Reply("Weather has been set.");
+            Reply(_l10n.Get("cmd.setcspweather.success"));
         }
         else
         {
-            Reply($"No weather with name '{upcomingStr}', use /cspweather for a list of available weathers.");
+            Reply(_l10n.Get("cmd.setcspweather.not_found", new { name = upcomingStr }));
         }
     }
 
@@ -156,7 +159,8 @@ public class AdminModule : ACModuleBase
     [Command("distance"), RequireConnectedPlayer]
     public void GetDistance([Remainder] ACTcpClient player)
     {
-        Reply(Vector3.Distance(Client!.EntryCar.Status.Position, player.EntryCar.Status.Position).ToString(CultureInfo.InvariantCulture));
+        var distance = Vector3.Distance(Client!.EntryCar.Status.Position, player.EntryCar.Status.Position).ToString(CultureInfo.InvariantCulture);
+        Reply(_l10n.Get("cmd.distance.result", new { distance }));
     }
 
     [Command("forcelights")]
@@ -165,17 +169,19 @@ public class AdminModule : ACModuleBase
         bool forceLights = toggle == "on";
         player.EntryCar.ForceLights = forceLights;
 
-        Reply($"{player.Name}'s lights {(forceLights ? "will" : "will not")} be forced on.");
+        Reply(_l10n.Get(forceLights ? "cmd.forcelights.enabled" : "cmd.forcelights.disabled", new { name = player.Name }));
     }
 
     [Command("whois")]
     public void WhoIs(ACTcpClient player)
     {
-        Reply($"IP: {(player.TcpClient.Client.RemoteEndPoint as System.Net.IPEndPoint)?.Address}\nProfile: https://steamcommunity.com/profiles/{player.Guid}\nPing: {player.EntryCar.Ping}ms");
-        Reply($"Position: {player.EntryCar.Status.Position}\nVelocity: {(int)(player.EntryCar.Status.Velocity.Length() * 3.6)}kmh");
+        var ip = (player.TcpClient.Client.RemoteEndPoint as System.Net.IPEndPoint)?.Address;
+        Reply(_l10n.Get("cmd.whois.info", new { ip, guid = player.Guid, ping = player.EntryCar.Ping }));
+        var velocity = (int)(player.EntryCar.Status.Velocity.Length() * 3.6);
+        Reply(_l10n.Get("cmd.whois.position", new { position = player.EntryCar.Status.Position, velocity }));
         if (player.OwnerGuid.HasValue && player.Guid != player.OwnerGuid)
         {
-            Reply($"Steam Family Sharing Owner: https://steamcommunity.com/profiles/{player.OwnerGuid}");
+            Reply(_l10n.Get("cmd.whois.family_sharing_owner", new { guid = player.OwnerGuid }));
         }
     }
 
@@ -183,14 +189,14 @@ public class AdminModule : ACModuleBase
     public void Restrict(ACTcpClient player, float restrictor, float ballastKg)
     {
         player.SendPacket(new BallastUpdate { SessionId = player.SessionId, BallastKg = ballastKg, Restrictor = restrictor });
-        Reply("Restrictor and ballast set.");
+        Reply(_l10n.Get("cmd.restrict.success"));
     }
-        
+
     // Do not change the reply, it is used by CSP admin detection
     [Command("ballast")]
     public void Ballast()
     {
-        Reply("SYNTAX ERROR: Use 'ballast [driver numeric id] [kg]'");
+        Reply(_l10n.Get("cmd.ballast.syntax_error"));
     }
 
     [Command("set")]
@@ -198,11 +204,13 @@ public class AdminModule : ACModuleBase
     {
         try
         {
-            Reply(_configuration.SetProperty(key, value) ? $"Property {key} set to {value}" : $"Could not set property {key}");
+            Reply(_configuration.SetProperty(key, value)
+                ? _l10n.Get("cmd.set.success", new { key, value })
+                : _l10n.Get("cmd.set.failed", new { key }));
         }
         catch (Exception ex)
         {
-            Reply(ex.Message);
+            Reply(_l10n.Get("cmd.set.error", new { error = ex.Message }));
         }
     }
 
@@ -210,12 +218,12 @@ public class AdminModule : ACModuleBase
     public async Task Whitelist(ulong guid)
     {
         await _whitelist.AddAsync(guid);
-        Reply($"SteamID {guid} was added to the whitelist");
+        Reply(_l10n.Get("cmd.whitelist.added", new { guid }));
     }
-    
+
     [Command("say")]
     public void Say([Remainder] string message)
     {
-        Broadcast("CONSOLE: " + message);
+        Broadcast(_l10n.Get("cmd.say.broadcast", new { message }));
     }
 }

@@ -32,6 +32,7 @@ public class UdpPluginServer : CriticalBackgroundService, IAssettoServerAutostar
     private readonly EntryCarManager _entryCarManager;
     private readonly SessionManager _sessionManager;
     private readonly WeatherManager _weatherManager;
+    private readonly ILocalizationService _l10n;
     private readonly SocketAddress _inAddress;
     private readonly SocketAddress _outAddress;
     private readonly Socket _socket;
@@ -45,13 +46,15 @@ public class UdpPluginServer : CriticalBackgroundService, IAssettoServerAutostar
         ACServerConfiguration configuration,
         EntryCarManager entryCarManager,
         ChatService chatService,
-        IHostApplicationLifetime applicationLifetime) : base(applicationLifetime)
+        IHostApplicationLifetime applicationLifetime,
+        ILocalizationService l10n) : base(applicationLifetime)
     {
         _configuration = configuration;
         _chatService = chatService;
         _entryCarManager = entryCarManager;
         _sessionManager = sessionManager;
         _weatherManager = weatherManager;
+        _l10n = l10n;
 
         // lets check if we should enable the plugin server
         if (configuration.Server.UdpPluginAddress == null || _configuration.Server.UdpPluginLocalPort == 0)
@@ -297,7 +300,7 @@ public class UdpPluginServer : CriticalBackgroundService, IAssettoServerAutostar
                     byte sessionId = packetReader.Read<byte>();
                     if (_entryCarManager.ConnectedCars.TryGetValue(sessionId, out EntryCar? car))
                     {
-                        _ = Task.Run(() => _entryCarManager.KickAsync(car.Client, "You have been kicked."));
+                        _ = Task.Run(() => _entryCarManager.KickAsync(car.Client, _l10n.Get("kick.plugin_default")));
                     }
                     else
                     {

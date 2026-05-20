@@ -10,6 +10,7 @@ using AssettoServer.Shared.Model;
 using AssettoServer.Shared.Network.Packets.Incoming;
 using AssettoServer.Shared.Network.Packets.Outgoing;
 using AssettoServer.Shared.Network.Packets.Shared;
+using AssettoServer.Shared.Services;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -65,6 +66,7 @@ public partial class EntryCar : IEntryCar<ACTcpClient>
     private readonly ACServerConfiguration _configuration;
     private readonly EntryCarManager _entryCarManager;
     private readonly SessionManager _sessionManager;
+    private readonly ILocalizationService _l10n;
 
     public ILogger Logger { get; }
 
@@ -85,7 +87,7 @@ public partial class EntryCar : IEntryCar<ACTcpClient>
         }
     }
         
-    public EntryCar(string model, string? skin, byte sessionId, Func<EntryCar, AiState> aiStateFactory, SessionManager sessionManager, ACServerConfiguration configuration, EntryCarManager entryCarManager, AiSpline? spline = null)
+    public EntryCar(string model, string? skin, byte sessionId, Func<EntryCar, AiState> aiStateFactory, SessionManager sessionManager, ACServerConfiguration configuration, EntryCarManager entryCarManager, ILocalizationService l10n, AiSpline? spline = null)
     {
         Model = model;
         Skin = skin ?? "";
@@ -93,6 +95,7 @@ public partial class EntryCar : IEntryCar<ACTcpClient>
         _sessionManager = sessionManager;
         _configuration = configuration;
         _entryCarManager = entryCarManager;
+        _l10n = l10n;
         _spline = spline;
         _aiStateFactory = aiStateFactory;
         OtherCarsLastSentUpdateTime = new long[entryCarManager.EntryCars.Length];
@@ -139,7 +142,7 @@ public partial class EntryCar : IEntryCar<ACTcpClient>
         else if (!HasSentAfkWarning && _configuration.Extra.MaxAfkTimeMilliseconds - timeAfk < 60000)
         {
             HasSentAfkWarning = true;
-            Client?.SendPacket(new ChatMessage { SessionId = 255, Message = "You will be kicked in 1 minute for being AFK." });
+            Client?.SendPacket(new ChatMessage { SessionId = 255, Message = _l10n.Get("afk.warning_1min") });
         }
     }
 
