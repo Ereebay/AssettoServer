@@ -26,10 +26,14 @@ public class YamlLocalizationService : ILocalizationService
     private static readonly Regex PlaceholderRegex = new(@"\{(\w+)\}", RegexOptions.Compiled);
 
     public YamlLocalizationService(ACServerConfiguration configuration)
+        : this(configuration.Extra.ServerLocale, Path.Join(configuration.BaseFolder, "lang"))
     {
-        _currentLocale = string.IsNullOrEmpty(configuration.Extra.ServerLocale) ? DefaultLocale : configuration.Extra.ServerLocale;
+    }
 
-        var langDir = Path.Join(configuration.BaseFolder, "lang");
+    internal YamlLocalizationService(string locale, string langDir)
+    {
+        _currentLocale = string.IsNullOrEmpty(locale) ? DefaultLocale : locale;
+
         if (!Directory.Exists(langDir))
         {
             Log.Information("Localization directory {Path} not found, no translations loaded", langDir);
@@ -40,10 +44,10 @@ public class YamlLocalizationService : ILocalizationService
         }
 
         var summary = new StringBuilder();
-        foreach (var (locale, dict) in _strings)
+        foreach (var (loc, dict) in _strings)
         {
             if (summary.Length > 0) summary.Append(", ");
-            summary.Append(locale).Append('=').Append(dict.Count);
+            summary.Append(loc).Append('=').Append(dict.Count);
         }
         Log.Information("Loaded translations: {Translations}", summary.Length == 0 ? "(none)" : summary.ToString());
     }
