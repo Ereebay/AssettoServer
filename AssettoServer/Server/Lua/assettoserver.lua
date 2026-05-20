@@ -41,13 +41,13 @@ local function setValue(key, value)
         ac.debug("response", stringify(response))
 
         if response.status ~= 200 then
-            ui.toast(ui.Icons.Ban, "Error updating " .. key .. " (" .. response.status .. ")")
+            ui.toast(ui.Icons.Ban, "更新 " .. key .. " 失败（" .. response.status .. "）")
         else
             local parsed = stringify.parse(response.body)
             if parsed.Status ~= "OK" then
-                ui.toast(ui.Icons.Ban, "Error updating " .. key .. " (" .. parsed.ErrorMessage .. ")")
+                ui.toast(ui.Icons.Ban, "更新 " .. key .. " 失败（" .. parsed.ErrorMessage .. "）")
             else
-                ui.toast(ui.Icons.Confirm, key .. " set to " .. tostring(value))
+                ui.toast(ui.Icons.Confirm, key .. " 已设置为 " .. tostring(value))
             end
         end
     end)
@@ -90,21 +90,21 @@ local function tab_About()
         ui.text("AssettoServer")
         ui.popFont()
 
-        ui.textWrapped("This server runs AssettoServer, making it possible to have online traffic in Assetto Corsa. AssettoServer is free software, so you can run your own traffic server.")
+        ui.textWrapped("本服务器运行于 AssettoServer，使得 Assetto Corsa 能够拥有在线交通流。AssettoServer 是自由软件，你也可以自己搭建一个交通服务器。")
         ui.text("")
-        ui.textWrapped("Visit the website for more info:")
+        ui.textWrapped("访问官方网站了解更多：")
         ui.sameLine()
         ui_hyperlink("https://assettoserver.org")
 
-        ui.textWrapped("Official Discord server:")
+        ui.textWrapped("官方 Discord 服务器：")
         ui.sameLine()
         ui_hyperlink("https://discord.gg/uXEXRcSkyz")
 
         ui.text("")
         ui.pushFont(ui.Font.Title)
-        ui.textWrapped("Support AssettoServer development")
+        ui.textWrapped("支持 AssettoServer 开发")
         ui.popFont()
-        ui.textWrapped("Patreon:")
+        ui.textWrapped("Patreon：")
         ui.sameLine()
         ui_hyperlink("https://patreon.com/assettoserver")
 
@@ -113,18 +113,18 @@ local function tab_About()
             ui.image(srpLogoUrl, srpLogoSize)
 
             ui.offsetCursorY(5)
-            ui.textWrapped("This server is running the Shutoko Revival Project track.")
-            ui.textWrapped("This project aims to be the definitive version of Shutoko, otherwise known as Tokyo Metropolitan Expressway, or the Wangan. Exclusively for Assetto Corsa.")
+            ui.textWrapped("本服务器使用 Shutoko Revival Project 赛道。")
+            ui.textWrapped("该项目致力于打造首都高速道路（又称湾岸，Shutoko）的权威版本，仅适用于 Assetto Corsa。")
             ui.text("")
-            ui.textWrapped("Official Discord server:")
+            ui.textWrapped("官方 Discord 服务器：")
             ui.sameLine()
             ui_hyperlink("https://discord.gg/shutokorevivalproject")
 
             ui.text("")
             ui.pushFont(ui.Font.Title)
-            ui.textWrapped("Support Shutoko Revival Project development")
+            ui.textWrapped("支持 Shutoko Revival Project 开发")
             ui.popFont()
-            ui.textWrapped("Patreon:")
+            ui.textWrapped("Patreon：")
             ui.sameLine()
             ui_hyperlink("https://www.patreon.com/Shutoko_Revival_Project")
         end
@@ -211,7 +211,7 @@ local function ui_configObject(name, obj)
 end
 
 local function tab_Configuration()
-    ui.textWrapped("This feature is experimental! Changed values will not persist after a server restart.")
+    ui.textWrapped("此功能为实验性！修改的值在服务器重启后不会保留。")
     ui.childWindow("configuration", ui.availableSpace(), function ()
         ui_configObject("Root", configuration)
     end)
@@ -219,14 +219,14 @@ end
 
 local function window_AssettoServer()
     ui.tabBar("main_tabBar", function ()
-        ui.tabItem("About", tab_About)
-        ui.tabItem("License", tab_License)
+        ui.tabItem("关于", tab_About)
+        ui.tabItem("许可证", tab_License)
         if sim.isAdmin then
             if configuration == nil and not configurationLoading then
                 configurationLoading = true
                 getConfiguration()
             end
-            ui.tabItem("Configuration", tab_Configuration)
+            ui.tabItem("配置", tab_Configuration)
         end
     end)
 end
