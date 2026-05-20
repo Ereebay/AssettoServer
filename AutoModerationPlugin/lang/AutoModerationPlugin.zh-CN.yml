@@ -1,0 +1,9 @@
+locale: zh-CN
+fallback: en-US
+strings:
+  plugin.automod.reason.no_lights: "未开车灯"
+  plugin.automod.reason.wrong_way: "逆向行驶"
+  plugin.automod.reason.blocking: "阻塞道路"
+  plugin.automod.warning.no_lights: "现在是夜间，请打开车灯，否则你将被踢出。"
+  plugin.automod.warning.wrong_way: "你正在逆向行驶！请掉头，否则你将被踢出。"
+  plugin.automod.warning.blocking: "你正在阻塞道路！请移动或传送回维修区，否则你将被踢出。"

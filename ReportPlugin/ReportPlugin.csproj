@@ -25,4 +25,11 @@
         <PackageReference Include="CSharpDiscordWebhookAsync" Version="1.0.2" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="lang\*.yml">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
+    </ItemGroup>
+
 </Project>

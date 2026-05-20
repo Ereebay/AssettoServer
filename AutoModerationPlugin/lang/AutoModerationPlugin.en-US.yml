@@ -1,0 +1,8 @@
+locale: en-US
+strings:
+  plugin.automod.reason.no_lights: "driving without lights"
+  plugin.automod.reason.wrong_way: "driving the wrong way"
+  plugin.automod.reason.blocking: "blocking the road"
+  plugin.automod.warning.no_lights: "It is currently night, please turn on your lights or you will be kicked."
+  plugin.automod.warning.wrong_way: "You are driving the wrong way! Turn around or you will be kicked."
+  plugin.automod.warning.blocking: "You are blocking the road! Please move or teleport to pits, or you will be kicked."

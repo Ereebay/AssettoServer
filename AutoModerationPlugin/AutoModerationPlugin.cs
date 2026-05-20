@@ -28,6 +28,7 @@ public class AutoModerationPlugin : CriticalBackgroundService, IAssettoServerAut
     private readonly WeatherManager _weatherManager;
     private readonly Func<EntryCar, EntryCarAutoModeration> _entryCarAutoModerationFactory;
     private readonly AiSpline? _aiSpline;
+    private readonly ILocalizationService _l10n;
 
     private readonly float _laneRadiusSquared;
 
@@ -38,7 +39,8 @@ public class AutoModerationPlugin : CriticalBackgroundService, IAssettoServerAut
         CSPServerScriptProvider scriptProvider,
         Func<EntryCar, EntryCarAutoModeration> entryCarAutoModerationFactory,
         IHostApplicationLifetime applicationLifetime,
-        AiSpline? aiSpline = null) : base(applicationLifetime)
+        AiSpline? aiSpline = null,
+        ILocalizationService l10n = null!) : base(applicationLifetime)
     {
         _configuration = configuration;
         _entryCarManager = entryCarManager;
@@ -46,6 +48,7 @@ public class AutoModerationPlugin : CriticalBackgroundService, IAssettoServerAut
         _serverConfiguration = serverConfiguration;
         _entryCarAutoModerationFactory = entryCarAutoModerationFactory;
         _aiSpline = aiSpline;
+        _l10n = l10n;
 
         if (aiSpline == null)
         {
@@ -69,6 +72,9 @@ public class AutoModerationPlugin : CriticalBackgroundService, IAssettoServerAut
             using var streamReader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("AutoModerationPlugin.lua.automoderation.lua")!);
             scriptProvider.AddScript(streamReader.ReadToEnd(), "automoderation.lua");
         }
+
+        var pluginDir = Path.GetDirectoryName(typeof(AutoModerationPlugin).Assembly.Location)!;
+        _l10n.RegisterSource(Path.Combine(pluginDir, "lang"), "automod");
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -107,12 +113,12 @@ public class AutoModerationPlugin : CriticalBackgroundService, IAssettoServerAut
                             instance.NoLightSeconds++;
                             if (instance.NoLightSeconds > _configuration.NoLightsKick.DurationSeconds)
                             {
-                                _ = _entryCarManager.KickAsync(client, "driving without lights");
+                                _ = _entryCarManager.KickAsync(client, _l10n.Get("plugin.automod.reason.no_lights"));
                             }
                             else if (!instance.HasSentNoLightWarning && instance.NoLightSeconds > _configuration.NoLightsKick.DurationSeconds / 2)
                             {
                                 instance.HasSentNoLightWarning = true;
-                                client.SendPacket(new ChatMessage { SessionId = 255, Message = "It is currently night, please turn on your lights or you will be kicked." });
+                                client.SendPacket(new ChatMessage { SessionId = 255, Message = _l10n.Get("plugin.automod.warning.no_lights") });
                             }
                         }
                         else
@@ -135,12 +141,12 @@ public class AutoModerationPlugin : CriticalBackgroundService, IAssettoServerAut
                             instance.WrongWaySeconds++;
                             if (instance.WrongWaySeconds > _configuration.WrongWayKick.DurationSeconds)
                             {
-                                _ = _entryCarManager.KickAsync(client, "driving the wrong way");
+                                _ = _entryCarManager.KickAsync(client, _l10n.Get("plugin.automod.reason.wrong_way"));
                             }
                             else if (!instance.HasSentWrongWayWarning && instance.WrongWaySeconds > _configuration.WrongWayKick.DurationSeconds / 2)
                             {
                                 instance.HasSentWrongWayWarning = true;
-                                client.SendPacket(new ChatMessage { SessionId = 255, Message = "You are driving the wrong way! Turn around or you will be kicked." });
+                                client.SendPacket(new ChatMessage { SessionId = 255, Message = _l10n.Get("plugin.automod.warning.wrong_way") });
                             }
                         }
                         else
@@ -161,12 +167,12 @@ public class AutoModerationPlugin : CriticalBackgroundService, IAssettoServerAut
                             instance.BlockingRoadSeconds++;
                             if (instance.BlockingRoadSeconds > _configuration.BlockingRoadKick.DurationSeconds)
                             {
-                                _ = _entryCarManager.KickAsync(client, "blocking the road");
+                                _ = _entryCarManager.KickAsync(client, _l10n.Get("plugin.automod.reason.blocking"));
                             }
                             else if (!instance.HasSentBlockingRoadWarning && instance.BlockingRoadSeconds > _configuration.BlockingRoadKick.DurationSeconds / 2)
                             {
                                 instance.HasSentBlockingRoadWarning = true;
-                                client.SendPacket(new ChatMessage { SessionId = 255, Message = "You are blocking the road! Please move or teleport to pits, or you will be kicked." });
+                                client.SendPacket(new ChatMessage { SessionId = 255, Message = _l10n.Get("plugin.automod.warning.blocking") });
                             }
                         }
                         else
