@@ -19,6 +19,7 @@ using AssettoServer.Server.CMContentProviders;
 using AssettoServer.Server.Configuration;
 using AssettoServer.Server.Configuration.Serialization;
 using AssettoServer.Server.GeoParams;
+using AssettoServer.Server.Localization;
 using AssettoServer.Server.OpenSlotFilters;
 using AssettoServer.Server.Plugin;
 using AssettoServer.Server.Steam;
@@ -26,6 +27,7 @@ using AssettoServer.Server.TrackParams;
 using AssettoServer.Server.UserGroup;
 using AssettoServer.Server.Weather;
 using AssettoServer.Server.Whitelist;
+using AssettoServer.Shared.Services;
 using Autofac;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
@@ -110,6 +112,7 @@ public class Startup
         builder.RegisterType<GuidSlotFilter>().As<IOpenSlotFilter>();
         builder.RegisterType<ConfigurationSerializer>().AsSelf();
         builder.RegisterType<DefaultCMContentProvider>().As<ICMContentProvider>().SingleInstance();
+        builder.RegisterType<YamlLocalizationService>().As<ILocalizationService>().SingleInstance();
         builder.RegisterType<CommandService>().AsSelf().SingleInstance();
 
         if (_configuration.GeneratePluginConfigs)

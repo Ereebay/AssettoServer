@@ -48,6 +48,8 @@ public class ACExtraConfiguration
     public bool EnableServerDetails { get; set; } = true;
     [YamlMember(Description = "Server description shown in Content Manager. EnableServerDetails must be on")]
     public string ServerDescription { get; set; } = "";
+    [YamlMember(Description = "Server-wide UI language for chat/command messages (e.g. en-US, zh-CN). Translation files live in cfg/lang/")]
+    public string ServerLocale { get; init; } = "en-US";
     [YamlMember(Description = "Link server time to real map time. For correct timezones there must be an entry for the map here: https://github.com/ac-custom-shaders-patch/acc-extension-config/blob/master/config/data_track_params.ini")]
     public bool EnableRealTime { get; set; } = false;
     [YamlMember(Description = "Enable new CSP weather handling. Allows rain and smooth weather transitions. Requires CSP 0.1.76+")]
