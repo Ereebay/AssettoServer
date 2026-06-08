@@ -4,6 +4,7 @@ using System.Reflection;
 using AssettoServer.Network.Tcp;
 using AssettoServer.Server;
 using AssettoServer.Server.Configuration;
+using AssettoServer.Shared.Services;
 using Microsoft.Extensions.Hosting;
 
 namespace TagModePlugin;
@@ -16,6 +17,7 @@ public class TagModePlugin : BackgroundService
     private readonly EntryCarManager _entryCarManager;
     private readonly TagSession.Factory _sessionFactory;
     private readonly Func<EntryCar, EntryCarTagMode> _entryCarTagModeFactory;
+    private readonly ILocalizationService _l10n;
     
     public TagSession? CurrentSession { get; private set; }
 
@@ -29,13 +31,18 @@ public class TagModePlugin : BackgroundService
         EntryCarManager entryCarManager,
         Func<EntryCar, EntryCarTagMode> entryCarTagModeFactory,
         TagSession.Factory sessionFactory,
-        CSPServerScriptProvider scriptProvider)
+        CSPServerScriptProvider scriptProvider,
+        ILocalizationService l10n)
     {
         _configuration = configuration;
         _entryCarManager = entryCarManager;
         _entryCarTagModeFactory = entryCarTagModeFactory;
         _sessionFactory = sessionFactory;
-        
+        _l10n = l10n;
+
+        var pluginDir = Path.GetDirectoryName(typeof(TagModePlugin).Assembly.Location)!;
+        _l10n.RegisterSource(Path.Combine(pluginDir, "lang"), "tag");
+
         _entryCarManager.ClientConnected += (sender, _) =>
         {
             sender.Collision += OnCollision;

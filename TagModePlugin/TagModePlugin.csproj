@@ -32,4 +32,11 @@
         <EmbeddedResource Include="lua\tagmode.lua" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="lang\*.yml">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
+    </ItemGroup>
+
 </Project>

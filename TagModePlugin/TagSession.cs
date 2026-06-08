@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using AssettoServer.Server;
+using AssettoServer.Shared.Services;
 using Serilog;
 
 namespace TagModePlugin;
@@ -18,20 +19,23 @@ public class TagSession
     private readonly EntryCarManager _entryCarManager;
     private readonly TagModePlugin _plugin;
     private readonly TagModeConfiguration _configuration;
+    private readonly ILocalizationService _l10n;
 
     public delegate TagSession Factory(EntryCar initialTagger);
-    
+
     public TagSession(EntryCar initialTagger,
         SessionManager sessionManager,
         EntryCarManager entryCarManager,
         TagModePlugin plugin,
-        TagModeConfiguration configuration)
+        TagModeConfiguration configuration,
+        ILocalizationService l10n)
     {
         InitialTagger = LastCaught = initialTagger;
         _sessionManager = sessionManager;
         _entryCarManager = entryCarManager;
         _plugin = plugin;
         _configuration = configuration;
+        _l10n = l10n;
     }
 
     public Task StartAsync()
@@ -51,7 +55,7 @@ public class TagSession
         {
             UpdateAllColors(_plugin.RunnerColor);
             
-            _entryCarManager.BroadcastChat("Game of tag starting in 15 seconds");
+            _entryCarManager.BroadcastChat(_l10n.Get("plugin.tag.starting"));
             await Task.Delay(15_000);
             
             _entryCarManager.BroadcastChat("Ready...");
@@ -96,7 +100,7 @@ public class TagSession
     {
         if (IsCancelled)
         {
-            _entryCarManager.BroadcastChat("The game of tag was cancelled.");
+            _entryCarManager.BroadcastChat(_l10n.Get("plugin.tag.cancelled"));
             Log.Information("The game of tag was cancelled");
         }
         else
@@ -104,15 +108,17 @@ public class TagSession
             switch (_configuration.EnableEndlessMode)
             {
                 case false:
-                    var winners = _plugin.Instances.Any(car => car.Value is { IsTagged: false, IsConnected: true }) ? "Runners" : "Taggers";
+                    var runnersWin = _plugin.Instances.Any(car => car.Value is { IsTagged: false, IsConnected: true });
+                    var winners = runnersWin ? "Runners" : "Taggers";
+                    var localizedTeam = _l10n.Get(runnersWin ? "plugin.tag.team.runners" : "plugin.tag.team.taggers");
 
-                    _entryCarManager.BroadcastChat($"The {winners} just won this game of tag.");
+                    _entryCarManager.BroadcastChat(_l10n.Get("plugin.tag.win_team", new { team = localizedTeam }));
                     Log.Information("The {Winners} just won this game of tag", winners);
                     break;
                 case true:
                     var winner = LastCaught.Client?.Name ?? $"Car #{LastCaught.SessionId}";
 
-                    _entryCarManager.BroadcastChat($"'{winner}' just won this game of tag.");
+                    _entryCarManager.BroadcastChat(_l10n.Get("plugin.tag.win_player", new { name = winner }));
                     Log.Information("{Winner} just won this game of tag", winner);
                     break;
             }

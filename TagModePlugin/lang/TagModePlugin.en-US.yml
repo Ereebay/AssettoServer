@@ -1,0 +1,9 @@
+locale: en-US
+strings:
+  plugin.tag.now_tagger: "You are now a tagger."
+  plugin.tag.starting: "Game of tag starting in 15 seconds"
+  plugin.tag.cancelled: "The game of tag was cancelled."
+  plugin.tag.win_team: "The {team} just won this game of tag."
+  plugin.tag.win_player: "'{name}' just won this game of tag."
+  plugin.tag.team.runners: "Runners"
+  plugin.tag.team.taggers: "Taggers"

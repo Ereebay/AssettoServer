@@ -1,0 +1,10 @@
+locale: zh-CN
+fallback: en-US
+strings:
+  plugin.tag.now_tagger: "你现在是追捕者。"
+  plugin.tag.starting: "标记游戏将在 15 秒后开始"
+  plugin.tag.cancelled: "本局标记游戏已取消。"
+  plugin.tag.win_team: "{team} 赢得了本局标记游戏。"
+  plugin.tag.win_player: "'{name}' 赢得了本局标记游戏。"
+  plugin.tag.team.runners: "逃跑者"
+  plugin.tag.team.taggers: "追捕者"
