@@ -4,6 +4,7 @@ using AssettoServer.Server;
 using AssettoServer.Server.Ai.Splines;
 using AssettoServer.Server.Configuration;
 using AssettoServer.Server.Weather;
+using AssettoServer.Shared.Services;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
@@ -23,12 +24,16 @@ public class AutoModerationPlugin : BackgroundService
         ACServerConfiguration serverConfiguration,
         CSPServerScriptProvider scriptProvider,
         Func<EntryCar, EntryCarAutoModeration> entryCarAutoModerationFactory,
+        ILocalizationService l10n,
         AiSpline? aiSpline = null)
     {
         _configuration = configuration;
         _entryCarManager = entryCarManager;
         _weatherManager = weatherManager;
         _entryCarAutoModerationFactory = entryCarAutoModerationFactory;
+
+        var pluginDir = Path.GetDirectoryName(typeof(AutoModerationPlugin).Assembly.Location)!;
+        l10n.RegisterSource(Path.Combine(pluginDir, "lang"), "automod");
 
         if (aiSpline == null)
         {
