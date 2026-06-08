@@ -1,0 +1,11 @@
+locale: zh-CN
+fallback: en-US
+strings:
+  plugin.voteweather.cmd.no_vote: "当前没有进行中的天气投票。"
+  plugin.voteweather.cmd.invalid_choice: "无效的选项。"
+  plugin.voteweather.cmd.already_voted: "你已经投过票了。"
+  plugin.voteweather.cmd.vote_counted: "你对 {weather} 的投票已计入。"
+  plugin.voteweather.broadcast.header: "下一个天气投票："
+  plugin.voteweather.broadcast.option: " /w {index} - {weather}"
+  plugin.voteweather.broadcast.result: "天气投票已结束。下一个天气：{weather}"
+  plugin.voteweather.no_votes: "天气投票已结束，但没有任何人投票。天气保持不变。"

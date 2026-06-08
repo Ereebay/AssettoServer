@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using AssettoServer.Server;
+using AssettoServer.Shared.Services;
 using Serilog;
 
 namespace RaceChallengePlugin;
@@ -23,16 +24,18 @@ public class Race
     private readonly SessionManager _sessionManager;
     private readonly EntryCarManager _entryCarManager;
     private readonly RaceChallengePlugin _plugin;
+    private readonly ILocalizationService _l10n;
 
     public delegate Race Factory(EntryCar challenger, EntryCar challenged, bool lineUpRequired = true);
-    
-    public Race(EntryCar challenger, EntryCar challenged, SessionManager sessionManager, EntryCarManager entryCarManager, RaceChallengePlugin plugin, bool lineUpRequired = true)
+
+    public Race(EntryCar challenger, EntryCar challenged, SessionManager sessionManager, EntryCarManager entryCarManager, RaceChallengePlugin plugin, ILocalizationService l10n, bool lineUpRequired = true)
     {
         Challenger = challenger;
         Challenged = challenged;
         _sessionManager = sessionManager;
         _entryCarManager = entryCarManager;
         _plugin = plugin;
+        _l10n = l10n;
         LineUpRequired = lineUpRequired;
 
         ChallengerName = Challenger.Client?.Name!;
@@ -56,13 +59,13 @@ public class Race
         {
             if(Challenger.Client == null || Challenged.Client == null)
             {
-                SendMessage("Opponent has disconnected.");
+                SendMessage(_l10n.Get("plugin.race.opponent_disconnected"));
                 return;
             }
 
             if (LineUpRequired && !AreLinedUp())
             {
-                SendMessage("You have 15 seconds to line up.");
+                SendMessage(_l10n.Get("plugin.race.line_up.start"));
 
                 Task lineUpTimeout = Task.Delay(15000);
                 Task lineUpChecker = Task.Run(async () =>
@@ -74,7 +77,7 @@ public class Race
                 Task completedTask = await Task.WhenAny(lineUpTimeout, lineUpChecker);
                 if (completedTask == lineUpTimeout)
                 {
-                    SendMessage("You did not line up in time. The race has been cancelled.");
+                    SendMessage(_l10n.Get("plugin.race.line_up.failed"));
                     return;
                 }
             }
@@ -84,7 +87,7 @@ public class Race
             {
                 if(!AreLinedUp())
                 {
-                    SendMessage("You went out of line. The race has been cancelled.");
+                    SendMessage(_l10n.Get("plugin.race.line_up.out_of_line"));
                     return;
                 }
 
@@ -199,7 +202,7 @@ public class Race
         if(oldLeader != Leader)
         {
             if (!isFirstUpdate)
-                SendMessage($"{Leader.Client?.Name} has overtaken {oldLeader.Client?.Name}");
+                SendMessage(_l10n.Get("plugin.race.overtaken", new { new_leader = Leader.Client?.Name, old_leader = oldLeader.Client?.Name }));
 
             LastOvertakeTime = _sessionManager.ServerTimeMilliseconds;
             LastLeaderPosition = Leader.Status.Position;
@@ -216,7 +219,7 @@ public class Race
             string winnerName = Challenger == Leader ? ChallengerName : ChallengedName;
             string loserName = Challenger == Leader ? ChallengedName : ChallengerName;
 
-            _entryCarManager.BroadcastChat($"{winnerName} just beat {loserName} in a race.");
+            _entryCarManager.BroadcastChat(_l10n.Get("plugin.race.finished", new { winner = winnerName, loser = loserName }));
             Log.Information("{WinnerName} just beat {LoserName} in a race", winnerName, loserName);
         }
     }

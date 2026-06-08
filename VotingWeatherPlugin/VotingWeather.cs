@@ -1,6 +1,7 @@
 ﻿using AssettoServer.Network.Tcp;
 using AssettoServer.Server;
 using AssettoServer.Server.Weather;
+using AssettoServer.Shared.Services;
 using AssettoServer.Shared.Weather;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -13,6 +14,7 @@ public class VotingWeather : BackgroundService
     private readonly IWeatherTypeProvider _weatherTypeProvider;
     private readonly EntryCarManager _entryCarManager;
     private readonly VotingWeatherConfiguration _configuration;
+    private readonly ILocalizationService _l10n;
     private readonly List<WeatherFxType> _weathers;
     private readonly List<ACTcpClient> _alreadyVoted = [];
     private readonly List<WeatherChoice> _availableWeathers = [];
@@ -28,19 +30,24 @@ public class VotingWeather : BackgroundService
     public VotingWeather(VotingWeatherConfiguration configuration,
         WeatherManager weatherManager,
         IWeatherTypeProvider weatherTypeProvider,
-        EntryCarManager entryCarManager)
+        EntryCarManager entryCarManager,
+        ILocalizationService l10n)
     {
         _configuration = configuration;
         _weatherManager = weatherManager;
         _weatherTypeProvider = weatherTypeProvider;
         _entryCarManager = entryCarManager;
+        _l10n = l10n;
 
         if (!_configuration.BlacklistedWeathers.Contains(WeatherFxType.None))
         {
             _configuration.BlacklistedWeathers.Add(WeatherFxType.None);
         }
-        
+
         _weathers = Enum.GetValues<WeatherFxType>().Except(_configuration.BlacklistedWeathers).ToList();
+
+        var pluginDir = Path.GetDirectoryName(typeof(VotingWeather).Assembly.Location)!;
+        _l10n.RegisterSource(Path.Combine(pluginDir, "lang"), "voteweather");
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -67,19 +74,19 @@ public class VotingWeather : BackgroundService
     {
         if (!_votingOpen)
         {
-            client.SendChatMessage("There is no ongoing weather vote.");
+            client.SendChatMessage(_l10n.Get("plugin.voteweather.cmd.no_vote"));
             return;
         }
 
         if (choice >= _availableWeathers.Count || choice < 0)
         {
-            client.SendChatMessage("Invalid choice.");
+            client.SendChatMessage(_l10n.Get("plugin.voteweather.cmd.invalid_choice"));
             return;
         }
 
         if (_alreadyVoted.Contains(client))
         {
-            client.SendChatMessage("You voted already.");
+            client.SendChatMessage(_l10n.Get("plugin.voteweather.cmd.already_voted"));
             return;
         }
 
@@ -88,7 +95,7 @@ public class VotingWeather : BackgroundService
         var votedWeather = _availableWeathers[choice];
         votedWeather.Votes++;
 
-        client.SendChatMessage($"Your vote for {votedWeather.Weather} has been counted.");
+        client.SendChatMessage(_l10n.Get("plugin.voteweather.cmd.vote_counted", new { weather = votedWeather.Weather }));
     }
 
     private async Task UpdateAsync(CancellationToken stoppingToken)
@@ -100,7 +107,7 @@ public class VotingWeather : BackgroundService
 
         var weathersLeft = new List<WeatherFxType>(_weathers);
 
-        _entryCarManager.BroadcastChat("Vote for next weather:");
+        _entryCarManager.BroadcastChat(_l10n.Get("plugin.voteweather.broadcast.header"));
         for (int i = 0; i < _configuration.NumChoices; i++)
         {
             if (weathersLeft.Count < 1) break;
@@ -109,7 +116,7 @@ public class VotingWeather : BackgroundService
             _availableWeathers.Add(new WeatherChoice { Weather = nextWeather, Votes = 0 });
             weathersLeft.Remove(nextWeather);
 
-            _entryCarManager.BroadcastChat($" /w {i} - {nextWeather}");
+            _entryCarManager.BroadcastChat(_l10n.Get("plugin.voteweather.broadcast.option", new { index = i, weather = nextWeather }));
         }
 
         _votingOpen = true;
@@ -124,11 +131,11 @@ public class VotingWeather : BackgroundService
 
         if (maxVotes == 0 && _configuration.KeepWeatherOnNoVotes)
         {
-            _entryCarManager.BroadcastChat("Weather vote ended without any votes cast. Not changing weather.");
+            _entryCarManager.BroadcastChat(_l10n.Get("plugin.voteweather.no_votes"));
             return;
         }
         
-        _entryCarManager.BroadcastChat($"Weather vote ended. Next weather: {winner}");
+        _entryCarManager.BroadcastChat(_l10n.Get("plugin.voteweather.broadcast.result", new { weather = winner }));
 
         _weatherManager.SetWeather(new WeatherData(last.Type, winnerType)
         {

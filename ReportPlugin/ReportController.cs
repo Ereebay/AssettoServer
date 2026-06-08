@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using AssettoServer.Server;
 using AssettoServer.Shared.Network.Packets.Shared;
+using AssettoServer.Shared.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -12,11 +13,13 @@ public class ReportController : ControllerBase
 {
     private readonly ReportPlugin _plugin;
     private readonly EntryCarManager _entryCarManager;
+    private readonly ILocalizationService _l10n;
 
-    public ReportController(ReportPlugin plugin, EntryCarManager entryCarManager)
+    public ReportController(ReportPlugin plugin, EntryCarManager entryCarManager, ILocalizationService l10n)
     {
         _plugin = plugin;
         _entryCarManager = entryCarManager;
+        _l10n = l10n;
     }
 
     [HttpPost("/report")]
@@ -33,7 +36,7 @@ public class ReportController : ControllerBase
 
         if (lastReport?.AuditLog.Timestamp > DateTime.UtcNow - TimeSpan.FromSeconds(30))
         {
-            reporterClient.SendChatMessage("Please wait a moment before submitting another replay.");
+            reporterClient.SendChatMessage(_l10n.Get("plugin.report.replay.cooldown"));
             return StatusCode(StatusCodes.Status429TooManyRequests);
         }
         
@@ -53,7 +56,7 @@ public class ReportController : ControllerBase
         _plugin.SetLastReplay(reporterClient, report);
 
         reporterClient.Logger.Information("Replay received from {ClientName} ({SessionId}), ID: {Id}", reporterClient.Name, reporterClient.SessionId, guid);
-        reporterClient.SendChatMessage("Replay received.\nUse /report <reason> to submit this replay to moderators.");
+        reporterClient.SendChatMessage(_l10n.Get("plugin.report.replay.received"));
         
         return Ok();
     }

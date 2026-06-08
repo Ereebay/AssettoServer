@@ -1,0 +1,7 @@
+locale: en-US
+strings:
+  plugin.report.replay.cooldown: "Please wait a moment before submitting another replay."
+  plugin.report.replay.received: "Replay received.\nUse /report <reason> to submit this replay to moderators."
+  plugin.report.cmd.no_replay: "No replay submitted! Press Ctrl+Shift+S to send a replay (CSP 0.1.76+ required)"
+  plugin.report.cmd.already_submitted: "You have already submitted your last replay."
+  plugin.report.cmd.submitted: "Your report has been submitted."
