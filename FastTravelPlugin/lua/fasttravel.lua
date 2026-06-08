@@ -558,7 +558,7 @@ function script.drawUI(dt)
         local opacity = math.sin(sim.gameTime * 5) / 2 + 0.5
         ui.pushDWriteFont(fontBold)
         ui.beginOutline()                  --c1xtz: added outline to make text more readable
-        ui.dwriteDrawText('Press M key to FastTravel', 20, vec2(sim.windowWidth, sim.windowHeight) * vec2(0.1, 0.9), rgbm(1, 1, 1, opacity))
+        ui.dwriteDrawText(tr("plugin.fasttravel.hint_press_m"), 20, vec2(sim.windowWidth, sim.windowHeight) * vec2(0.1, 0.9), rgbm(1, 1, 1, opacity))
         ui.endOutline(rgb.colors.black, 1) --c1xtz: added outline to make text more readable
         ui.popDWriteFont()
     end

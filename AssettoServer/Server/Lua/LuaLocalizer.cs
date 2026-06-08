@@ -13,7 +13,8 @@ namespace AssettoServer.Server.Lua;
 /// </summary>
 public static class LuaLocalizer
 {
-    private static readonly Regex TrKeyRegex = new(@"tr\(""(lua\.[\w.]+)""", RegexOptions.Compiled);
+    // Matches tr("some.key") calls. Keys are dotted lowercase (core "lua.*" or plugin "plugin.<name>.*").
+    private static readonly Regex TrKeyRegex = new(@"tr\(""([\w.]+)""", RegexOptions.Compiled);
 
     public static string Inject(string luaSource, ILocalizationService localization)
     {
