@@ -41,13 +41,13 @@ local function setValue(key, value)
         ac.debug("response", stringify(response))
 
         if response.status ~= 200 then
-            ui.toast(ui.Icons.Ban, "Error updating " .. key .. " (" .. response.status .. ")")
+            ui.toast(ui.Icons.Ban, tr("lua.toast.update_error", { key = key, error = response.status }))
         else
             local parsed = stringify.parse(response.body)
             if parsed.Status ~= "OK" then
-                ui.toast(ui.Icons.Ban, "Error updating " .. key .. " (" .. parsed.ErrorMessage .. ")")
+                ui.toast(ui.Icons.Ban, tr("lua.toast.update_error", { key = key, error = parsed.ErrorMessage }))
             else
-                ui.toast(ui.Icons.Confirm, key .. " set to " .. tostring(value))
+                ui.toast(ui.Icons.Confirm, tr("lua.toast.value_set", { key = key, value = tostring(value) }))
             end
         end
     end)
@@ -135,21 +135,21 @@ local function tab_About()
         ui.text("AssettoServer")
         ui.popFont()
 
-        ui.textWrapped("This server runs AssettoServer, making it possible to have online traffic in Assetto Corsa. AssettoServer is free software, so you can run your own traffic server.")
+        ui.textWrapped(tr("lua.about.intro"))
         ui.text("")
-        ui.textWrapped("Visit the website for more info:")
+        ui.textWrapped(tr("lua.about.website"))
         ui.sameLine()
         ui_hyperlink("https://assettoserver.org")
 
-        ui.textWrapped("Official Discord server:")
+        ui.textWrapped(tr("lua.about.discord"))
         ui.sameLine()
         ui_hyperlink("https://discord.gg/uXEXRcSkyz")
 
         ui.text("")
         ui.pushFont(ui.Font.Title)
-        ui.textWrapped("Support AssettoServer development")
+        ui.textWrapped(tr("lua.about.support"))
         ui.popFont()
-        ui.textWrapped("Patreon:")
+        ui.textWrapped(tr("lua.about.patreon"))
         ui.sameLine()
         ui_hyperlink("https://patreon.com/assettoserver")
 
@@ -158,18 +158,18 @@ local function tab_About()
             ui.image(srpLogoUrl, srpLogoSize)
 
             ui.offsetCursorY(5)
-            ui.textWrapped("This server is running the Shutoko Revival Project track.")
-            ui.textWrapped("This project aims to be the definitive version of Shutoko, otherwise known as Tokyo Metropolitan Expressway, or the Wangan. Exclusively for Assetto Corsa.")
+            ui.textWrapped(tr("lua.about.srp_intro1"))
+            ui.textWrapped(tr("lua.about.srp_intro2"))
             ui.text("")
-            ui.textWrapped("Official Discord server:")
+            ui.textWrapped(tr("lua.about.discord"))
             ui.sameLine()
             ui_hyperlink("https://discord.gg/shutokorevivalproject")
 
             ui.text("")
             ui.pushFont(ui.Font.Title)
-            ui.textWrapped("Support Shutoko Revival Project development")
+            ui.textWrapped(tr("lua.about.srp_support"))
             ui.popFont()
-            ui.textWrapped("Patreon:")
+            ui.textWrapped(tr("lua.about.patreon"))
             ui.sameLine()
             ui_hyperlink("https://www.patreon.com/Shutoko_Revival_Project")
         end
@@ -256,7 +256,7 @@ local function ui_configObject(name, obj)
 end
 
 local function tab_Configuration()
-    ui.textWrapped("This feature is experimental! Changed values will not persist after a server restart.")
+    ui.textWrapped(tr("lua.config.experimental"))
     ui.childWindow("configuration", ui.availableSpace(), function ()
         ui_configObject("Root", configuration)
     end)
@@ -264,14 +264,14 @@ end
 
 local function window_AssettoServer()
     ui.tabBar("main_tabBar", function ()
-        ui.tabItem("About", tab_About)
-        ui.tabItem("License", tab_License)
+        ui.tabItem(tr("lua.tab.about"), tab_About)
+        ui.tabItem(tr("lua.tab.license"), tab_License)
         if sim.isAdmin then
             if configuration == nil and not configurationLoading then
                 configurationLoading = true
                 getConfiguration()
             end
-            ui.tabItem("Configuration", tab_Configuration)
+            ui.tabItem(tr("lua.tab.configuration"), tab_Configuration)
         end
     end)
 end

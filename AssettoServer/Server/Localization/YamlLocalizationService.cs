@@ -65,6 +65,12 @@ public class YamlLocalizationService : ILocalizationService
         return Render(format, key, args);
     }
 
+    public string GetRaw(string key)
+    {
+        var format = Resolve(key);
+        return format?.Raw ?? $"[missing: {key}]";
+    }
+
     public void RegisterSource(string sourceDir, string @namespace)
     {
         if (!Directory.Exists(sourceDir))
@@ -195,13 +201,14 @@ public class YamlLocalizationService : ILocalizationService
             segments.Add(new Segment(true, template.Substring(lastEnd)));
         if (segments.Count == 0)
             segments.Add(new Segment(true, ""));
-        return new CompiledFormat(segments);
+        return new CompiledFormat(segments, template);
     }
 
     private sealed class CompiledFormat
     {
         public List<Segment> Segments { get; }
-        public CompiledFormat(List<Segment> segments) { Segments = segments; }
+        public string Raw { get; }
+        public CompiledFormat(List<Segment> segments, string raw) { Segments = segments; Raw = raw; }
     }
 
     private readonly struct Segment

@@ -1,5 +1,6 @@
 using System.IO;
 using AssettoServer.Server.Localization;
+using AssettoServer.Server.Lua;
 
 namespace AssettoServer.Tests;
 
@@ -101,5 +102,23 @@ public class LocalizationServiceTests
         Assert.That(result, Contains.Substring("\n"));
         Assert.That(result, Does.StartWith("IP："));
         Assert.That(result, Does.EndWith("Ping：50ms"));
+    }
+
+    [Test]
+    public void GetRaw_PreservesPlaceholders()
+    {
+        var svc = new YamlLocalizationService("en-US", FindLangDir());
+        Assert.That(svc.GetRaw("lua.toast.value_set"), Is.EqualTo("{key} set to {value}"));
+    }
+
+    [Test]
+    public void LuaLocalizer_InjectsTableAndHelper()
+    {
+        var svc = new YamlLocalizationService("zh-CN", FindLangDir());
+        var result = LuaLocalizer.Inject("ui.tabItem(tr(\"lua.tab.about\"), x)", svc);
+
+        Assert.That(result, Contains.Substring("local function tr"));
+        Assert.That(result, Contains.Substring("[\"lua.tab.about\"] = \"关于\""));
+        Assert.That(result, Does.EndWith("ui.tabItem(tr(\"lua.tab.about\"), x)"));
     }
 }

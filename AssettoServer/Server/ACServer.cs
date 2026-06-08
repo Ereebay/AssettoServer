@@ -5,10 +5,12 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.IO;
 using AssettoServer.Server.Configuration;
 using AssettoServer.Server.Ai.Splines;
 using AssettoServer.Server.Blacklist;
 using AssettoServer.Server.GeoParams;
+using AssettoServer.Server.Lua;
 using AssettoServer.Server.Whitelist;
 using AssettoServer.Shared.Network.Packets.Outgoing;
 using AssettoServer.Shared.Services;
@@ -92,7 +94,12 @@ public class ACServer : BackgroundService, IHostedLifecycleService
             cspFeatureManager.Add(new CSPFeature { Name = "CUSTOM_UPDATE" });
         }
         
-        cspServerScriptProvider.AddScript(Assembly.GetExecutingAssembly().GetManifestResourceStream("AssettoServer.Server.Lua.assettoserver.lua")!, "assettoserver.lua");
+        using (var luaStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AssettoServer.Server.Lua.assettoserver.lua")!)
+        using (var luaReader = new StreamReader(luaStream))
+        {
+            // Localize the in-game CSP UI for the active ServerLocale before serving it.
+            cspServerScriptProvider.AddScript(LuaLocalizer.Inject(luaReader.ReadToEnd(), _l10n), "assettoserver.lua");
+        }
 
         if (_configuration.Extra.EnableCarReset)
         {
