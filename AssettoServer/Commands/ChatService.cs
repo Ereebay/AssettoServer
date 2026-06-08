@@ -8,6 +8,7 @@ using AssettoServer.Network.Tcp;
 using AssettoServer.Server;
 using AssettoServer.Server.Plugin;
 using AssettoServer.Shared.Network.Packets.Shared;
+using AssettoServer.Shared.Services;
 using AssettoServer.Utils;
 using Qmmands;
 using Serilog;
@@ -19,6 +20,7 @@ public partial class ChatService
     private readonly EntryCarManager _entryCarManager;
     private readonly Func<ACTcpClient, ChatCommandContext> _chatContextFactory;
     private readonly CommandService _commandService;
+    private readonly ILocalizationService _l10n;
 
     public event EventHandler<ACTcpClient, ChatEventArgs>? MessageReceived;
 
@@ -26,11 +28,13 @@ public partial class ChatService
         Func<ACTcpClient, ChatCommandContext> chatContextFactory,
         ACClientTypeParser acClientTypeParser,
         EntryCarManager entryCarManager,
-        CommandService commandService)
+        CommandService commandService,
+        ILocalizationService l10n)
     {
         _chatContextFactory = chatContextFactory;
         _entryCarManager = entryCarManager;
         _commandService = commandService;
+        _l10n = l10n;
         _entryCarManager.ClientConnected += OnClientConnected;
 
         _commandService.AddModules(Assembly.GetEntryAssembly());
@@ -65,7 +69,7 @@ public partial class ChatService
     {
         if (!e.Result.IsSuccessful)
         {
-            (e.Context as BaseCommandContext)?.Reply("An error occurred while executing this command.");
+            (e.Context as BaseCommandContext)?.Reply(_l10n.Get("cmd.execution_error"));
             Log.Error(e.Result.Exception, "Command execution failed: {Reason}", e.Result.FailureReason);
         }
 

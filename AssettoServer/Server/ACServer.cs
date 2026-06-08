@@ -11,6 +11,7 @@ using AssettoServer.Server.Blacklist;
 using AssettoServer.Server.GeoParams;
 using AssettoServer.Server.Whitelist;
 using AssettoServer.Shared.Network.Packets.Outgoing;
+using AssettoServer.Shared.Services;
 using AssettoServer.Utils;
 using Microsoft.Extensions.Hosting;
 using Prometheus;
@@ -26,6 +27,7 @@ public class ACServer : BackgroundService, IHostedLifecycleService
     private readonly GeoParamsManager _geoParamsManager;
     private readonly ChecksumManager _checksumManager;
     private readonly IHostApplicationLifetime _applicationLifetime;
+    private readonly ILocalizationService _l10n;
 
     /// <summary>
     /// Fires on each server tick in the main loop. Don't do resource intensive / long running stuff in here!
@@ -43,6 +45,7 @@ public class ACServer : BackgroundService, IHostedLifecycleService
         CSPFeatureManager cspFeatureManager,
         CSPServerScriptProvider cspServerScriptProvider,
         IHostApplicationLifetime applicationLifetime,
+        ILocalizationService l10n,
         AiSpline? aiSpline = null)
     {
         Log.Information("Starting server");
@@ -53,6 +56,7 @@ public class ACServer : BackgroundService, IHostedLifecycleService
         _geoParamsManager = geoParamsManager;
         _checksumManager = checksumManager;
         _applicationLifetime = applicationLifetime;
+        _l10n = l10n;
 
         blacklistService.Changed += OnBlacklistChanged;
         whitelistService.Changed += OnWhitelistChanged;
@@ -312,7 +316,7 @@ public class ACServer : BackgroundService, IHostedLifecycleService
     public Task StoppingAsync(CancellationToken cancellationToken)
     {
         Log.Information("Server shutting down");
-        _entryCarManager.BroadcastChat("*** Server shutting down ***");
+        _entryCarManager.BroadcastChat(_l10n.Get("server.shutdown_broadcast"));
         
         return Task.CompletedTask;
     }

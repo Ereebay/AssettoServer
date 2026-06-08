@@ -25,6 +25,7 @@ using AssettoServer.Shared.Network.Packets.Incoming;
 using AssettoServer.Shared.Network.Packets.Outgoing;
 using AssettoServer.Shared.Network.Packets.Outgoing.Handshake;
 using AssettoServer.Shared.Network.Packets.Shared;
+using AssettoServer.Shared.Services;
 using AssettoServer.Shared.Weather;
 using AssettoServer.Utils;
 using Serilog;
@@ -86,6 +87,7 @@ public class ACTcpClient : IClient
     private readonly OpenSlotFilterChain _openSlotFilter;
     private readonly CSPClientMessageHandler _clientMessageHandler;
     private readonly VoteManager _voteManager;
+    private readonly ILocalizationService _l10n;
 
     /// <summary>
     /// Fires when a client passed the checksum checks. This does not mean that the player has finished loading, use ClientFirstUpdateSent for that.
@@ -204,7 +206,8 @@ public class ACTcpClient : IClient
         CSPServerExtraOptions cspServerExtraOptions,
         OpenSlotFilterChain openSlotFilter,
         CSPClientMessageHandler clientMessageHandler,
-        VoteManager voteManager)
+        VoteManager voteManager,
+        ILocalizationService l10n)
     {
         UdpServer = udpServer;
         Logger = new LoggerConfiguration()
@@ -225,6 +228,7 @@ public class ACTcpClient : IClient
         _openSlotFilter = openSlotFilter;
         _clientMessageHandler = clientMessageHandler;
         _voteManager = voteManager;
+        _l10n = l10n;
 
         tcpClient.ReceiveTimeout = (int)TimeSpan.FromMinutes(5).TotalMilliseconds;
         tcpClient.SendTimeout = (int)TimeSpan.FromSeconds(30).TotalMilliseconds;
@@ -412,9 +416,9 @@ public class ACTcpClient : IClient
                     else if (!_sessionManager.IsOpen)
                         SendPacket(new SessionClosedResponse());
                     else if (Name.Length == 0)
-                        SendPacket(new AuthFailedResponse("Driver name cannot be empty."));
+                        SendPacket(new AuthFailedResponse(_l10n.Get("auth.empty_name")));
                     else if (!_cspFeatureManager.ValidateHandshake(cspFeatures))
-                        SendPacket(new AuthFailedResponse("Missing CSP features. Please update CSP and/or Content Manager."));
+                        SendPacket(new AuthFailedResponse(_l10n.Get("auth.missing_csp_features")));
                     else if ((response = await _openSlotFilter.ShouldAcceptConnectionAsync(this, handshakeRequest)).HasValue)
                         SendPacket(response.Value);
                     else if (!await _entryCarManager.TrySecureSlotAsync(this, handshakeRequest))
@@ -930,7 +934,7 @@ public class ACTcpClient : IClient
         }
     }
 
-    private void KickForFailedChecksum() => _ = _entryCarManager.KickAsync(this, KickReason.ChecksumFailed, null, null, $"{Name} failed the checksum check and has been kicked.");
+    private void KickForFailedChecksum() => _ = _entryCarManager.KickAsync(this, KickReason.ChecksumFailed, null, null, _l10n.Get("kick.broadcast_checksum_failed", new { name = Name }));
 
     private LapCompletedOutgoing CreateLapCompletedPacket(byte sessionId, uint lapTime, int cuts)
     {
