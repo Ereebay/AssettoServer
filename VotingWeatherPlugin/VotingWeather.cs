@@ -95,7 +95,7 @@ public class VotingWeather : BackgroundService
         var votedWeather = _availableWeathers[choice];
         votedWeather.Votes++;
 
-        client.SendChatMessage(_l10n.Get("plugin.voteweather.cmd.vote_counted", new { weather = votedWeather.Weather }));
+        client.SendChatMessage(_l10n.Get("plugin.voteweather.cmd.vote_counted", new { weather = votedWeather.Weather.Localized(_l10n) }));
     }
 
     private async Task UpdateAsync(CancellationToken stoppingToken)
@@ -116,7 +116,7 @@ public class VotingWeather : BackgroundService
             _availableWeathers.Add(new WeatherChoice { Weather = nextWeather, Votes = 0 });
             weathersLeft.Remove(nextWeather);
 
-            _entryCarManager.BroadcastChat(_l10n.Get("plugin.voteweather.broadcast.option", new { index = i, weather = nextWeather }));
+            _entryCarManager.BroadcastChat(_l10n.Get("plugin.voteweather.broadcast.option", new { index = i, weather = nextWeather.Localized(_l10n) }));
         }
 
         _votingOpen = true;
@@ -135,7 +135,7 @@ public class VotingWeather : BackgroundService
             return;
         }
         
-        _entryCarManager.BroadcastChat(_l10n.Get("plugin.voteweather.broadcast.result", new { weather = winner }));
+        _entryCarManager.BroadcastChat(_l10n.Get("plugin.voteweather.broadcast.result", new { weather = winner.Localized(_l10n) }));
 
         _weatherManager.SetWeather(new WeatherData(last.Type, winnerType)
         {

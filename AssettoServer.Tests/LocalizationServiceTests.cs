@@ -1,6 +1,7 @@
 using System.IO;
 using AssettoServer.Server.Localization;
 using AssettoServer.Server.Lua;
+using AssettoServer.Shared.Weather;
 
 namespace AssettoServer.Tests;
 
@@ -120,5 +121,16 @@ public class LocalizationServiceTests
         Assert.That(result, Contains.Substring("local function tr"));
         Assert.That(result, Contains.Substring("[\"lua.tab.about\"] = \"关于\""));
         Assert.That(result, Does.EndWith("ui.tabItem(tr(\"lua.tab.about\"), x)"));
+    }
+
+    [Test]
+    public void WeatherType_LocalizedName()
+    {
+        var en = new YamlLocalizationService("en-US", FindLangDir());
+        var zh = new YamlLocalizationService("zh-CN", FindLangDir());
+
+        Assert.That(WeatherFxType.LightRain.Localized(en), Is.EqualTo("Light Rain"));
+        Assert.That(WeatherFxType.LightRain.Localized(zh), Is.EqualTo("小雨"));
+        Assert.That(WeatherFxType.Clear.Localized(zh), Is.EqualTo("晴"));
     }
 }
