@@ -16,6 +16,13 @@ strings:
   ban.self_no_reason: "You have been banned from the server"
   kick.plugin_default: "You have been kicked."
 
+  # === Kick reason fragments (inserted into kick.broadcast_with_reason {reason}) ===
+  kick.reason.not_whitelisted: "not being whitelisted"
+
+  # === Vote kick ===
+  vote.kick.self: "You have been kicked through vote"
+  vote.kick.broadcast: "{name} has been kicked from the server through vote."
+
   # === AFK ===
   afk.warning_1min: "You will be kicked in 1 minute for being AFK."
 
@@ -70,6 +77,7 @@ strings:
   auth.not_whitelisted: "You are not whitelisted on this server"
   auth.empty_name: "Driver name cannot be empty."
   auth.missing_csp_features: "Missing CSP features. Please update CSP and/or Content Manager."
+  auth.ac_pro_unsupported: "Assetto Corsa Pro is not supported on this server. Consider setting EnableACProSupport to true in extra_cfg.yml"
 
   # === CSP in-game UI (assettoserver.lua, injected per ServerLocale at serve time) ===
   lua.tab.about: "About"

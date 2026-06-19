@@ -17,6 +17,13 @@ strings:
   ban.self_no_reason: "你已被服务器封禁"
   kick.plugin_default: "你已被踢出。"
 
+  # === 踢出原因片段（插入到 kick.broadcast_with_reason 的 {reason}） ===
+  kick.reason.not_whitelisted: "未加入白名单"
+
+  # === 投票踢人 ===
+  vote.kick.self: "你已被投票踢出"
+  vote.kick.broadcast: "{name} 已被投票踢出服务器。"
+
   # === 挂机 ===
   afk.warning_1min: "你将在 1 分钟后因挂机被踢出。"
 
@@ -71,6 +78,7 @@ strings:
   auth.not_whitelisted: "你不在本服务器的白名单中"
   auth.empty_name: "驾驶员名称不能为空。"
   auth.missing_csp_features: "缺少 CSP 功能。请更新 CSP 和/或 Content Manager。"
+  auth.ac_pro_unsupported: "本服务器不支持 Assetto Corsa Pro。可在 extra_cfg.yml 中将 EnableACProSupport 设为 true。"
 
   # === CSP 游戏内 UI (assettoserver.lua，发送时按 ServerLocale 注入) ===
   lua.tab.about: "关于"

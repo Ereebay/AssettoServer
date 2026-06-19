@@ -149,7 +149,7 @@ public class ACServer : BackgroundService, IHostedLifecycleService
             {
                 if (client != null && !await sender.IsWhitelistedAsync(client.Guid))
                 {
-                    _ = _entryCarManager.KickAsync(client, "not being whitelisted");
+                    _ = _entryCarManager.KickAsync(client, _l10n.Get("kick.reason.not_whitelisted"));
                 }
             }
         });

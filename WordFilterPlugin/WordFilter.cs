@@ -33,7 +33,7 @@ public class WordFilter : OpenSlotFilterBase
         {
             args.Cancel = true;
             sender.Logger.Information("Chat message from {ClientName} ({SessionId}) filtered and banned: {ChatMessage}", sender.Name, sender.SessionId, args.Message);
-            Task.Run(() => _entryCarManager.BanAsync(sender, "prohibited language"));
+            Task.Run(() => _entryCarManager.BanAsync(sender, _l10n.Get("plugin.wordfilter.ban_reason")));
         }
         else if (_configuration.ProhibitedChatPatterns.Any(regex => Regex.Match(args.Message, regex, RegexOptions.IgnoreCase).Success))
         {

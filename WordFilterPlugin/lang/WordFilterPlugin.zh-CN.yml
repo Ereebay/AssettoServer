@@ -2,3 +2,4 @@ locale: zh-CN
 fallback: en-US
 strings:
   plugin.wordfilter.prohibited_username: "用户名包含禁用词。请在 Settings > Content Manager > Drive > Online Name 中修改你的在线名称。"
+  plugin.wordfilter.ban_reason: "使用违禁词语"

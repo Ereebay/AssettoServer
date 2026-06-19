@@ -124,6 +124,19 @@ public class LocalizationServiceTests
     }
 
     [Test]
+    public void KickBanReasonFragments_Localized()
+    {
+        var zh = new YamlLocalizationService("zh-CN", FindLangDir());
+
+        // reason fragments are interpolated into the localized broadcast template
+        Assert.That(zh.Get("kick.broadcast_with_reason",
+                new { name = "张三", reason = zh.Get("kick.reason.not_whitelisted") }),
+            Is.EqualTo("张三 被踢出服务器，原因：未加入白名单。"));
+        Assert.That(zh.Get("vote.kick.broadcast", new { name = "张三" }),
+            Is.EqualTo("张三 已被投票踢出服务器。"));
+    }
+
+    [Test]
     public void WeatherType_LocalizedName()
     {
         var en = new YamlLocalizationService("en-US", FindLangDir());
