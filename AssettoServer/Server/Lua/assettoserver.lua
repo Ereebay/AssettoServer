@@ -1,3 +1,7 @@
+-- Debug fallback: in Debug builds CSP loads this script locally, bypassing the
+-- server-side tr() injection. In Release the injected (translated) tr() wins.
+local tr = tr or function(key, args) return key end
+
 local license = [[
 Copyright (C) 2026 Niewiarowski, compujuckel
 
@@ -26,7 +30,9 @@ local configuration
 local authHeaders = {}
 
 local function getConfiguration()
+    ac.log('getting configuration')
     web.get(configUrl, authHeaders, function (err, response)
+        ac.log(response.status)
         if response.status == 200 then
             ac.log("config loaded")
             configuration = stringify.parse(response.body)
@@ -266,6 +272,7 @@ local function window_AssettoServer()
     ui.tabBar("main_tabBar", function ()
         ui.tabItem(tr("lua.tab.about"), tab_About)
         ui.tabItem(tr("lua.tab.license"), tab_License)
+        ac.log(sim.isAdmin)
         if sim.isAdmin then
             if configuration == nil and not configurationLoading then
                 configurationLoading = true

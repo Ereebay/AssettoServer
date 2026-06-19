@@ -10,7 +10,6 @@ using AssettoServer.Server.Configuration;
 using AssettoServer.Server.Ai.Splines;
 using AssettoServer.Server.Blacklist;
 using AssettoServer.Server.GeoParams;
-using AssettoServer.Server.Lua;
 using AssettoServer.Server.Whitelist;
 using AssettoServer.Shared.Network.Packets.Outgoing;
 using AssettoServer.Shared.Services;
@@ -98,7 +97,7 @@ public class ACServer : BackgroundService, IHostedLifecycleService
         using (var luaReader = new StreamReader(luaStream))
         {
             // Localize the in-game CSP UI for the active ServerLocale before serving it.
-            cspServerScriptProvider.AddScript(LuaLocalizer.Inject(luaReader.ReadToEnd(), _l10n), "assettoserver.lua");
+            cspServerScriptProvider.AddLocalizedScript(luaReader.ReadToEnd(), _l10n, "assettoserver.lua");
         }
 
         if (_configuration.Extra.EnableCarReset)

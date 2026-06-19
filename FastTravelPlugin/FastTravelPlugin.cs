@@ -5,7 +5,6 @@ using AssettoServer.Network.Tcp;
 using AssettoServer.Server;
 using AssettoServer.Server.Ai.Splines;
 using AssettoServer.Server.Configuration;
-using AssettoServer.Server.Lua;
 using AssettoServer.Shared.Services;
 using AssettoServer.Utils;
 using FastTravelPlugin.Packets;
@@ -48,8 +47,7 @@ public class FastTravelPlugin : IHostedService
 
         using var streamReader = new StreamReader(luaPath);
         // Localize the in-game CSP UI for the active ServerLocale before serving it.
-        var fasttravelScript = LuaLocalizer.Inject(streamReader.ReadToEnd(), l10n);
-        scriptProvider.AddScript(fasttravelScript, "fasttravel.lua", new Dictionary<string, object>
+        scriptProvider.AddLocalizedScript(streamReader.ReadToEnd(), l10n, "fasttravel.lua", new Dictionary<string, object>
         {
             ["mapFixedTargetPosition"] = $"\"{JsonSerializer.Serialize(configuration.MapFixedTargetPosition)}\"",
             ["mapZoomValues"] = $"\"{JsonSerializer.Serialize(configuration.MapZoomValues)}\"",

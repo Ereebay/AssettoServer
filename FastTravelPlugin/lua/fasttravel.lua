@@ -5,6 +5,10 @@
 --thisguyStan: changed these paths to use the AssettoServer instance
 --thisguyStan: moved a few settings into AssettoServer
 
+-- Debug fallback: in Debug builds CSP loads this script locally, bypassing the
+-- server-side tr() injection. In Release the injected (translated) tr() wins.
+local tr = tr or function(key, args) return key end
+
 local config = ac.configValues({
     disableCollisions = true,
     mapFixedTargetPosition = "", -- { -2100, 0, 3200 },
