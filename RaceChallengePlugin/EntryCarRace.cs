@@ -3,6 +3,7 @@ using AssettoServer.Network.Tcp;
 using AssettoServer.Server;
 using AssettoServer.Shared.Network.Packets.Incoming;
 using AssettoServer.Shared.Network.Packets.Outgoing;
+using AssettoServer.Shared.Services;
 
 namespace RaceChallengePlugin;
 
@@ -13,21 +14,23 @@ public class EntryCarRace
     private readonly RaceChallengePlugin _plugin;
     private readonly EntryCar _entryCar;
     private readonly Race.Factory _raceFactory;
-    
+    private readonly ILocalizationService _l10n;
+
     public int LightFlashCount { get; internal set; }
-    
+
     internal Race? CurrentRace { get; set; }
 
     private long LastLightFlashTime { get; set; }
     private long LastRaceChallengeTime { get; set; }
 
-    public EntryCarRace(EntryCar entryCar, SessionManager sessionManager, EntryCarManager entryCarManager, RaceChallengePlugin plugin, Race.Factory raceFactory)
+    public EntryCarRace(EntryCar entryCar, SessionManager sessionManager, EntryCarManager entryCarManager, RaceChallengePlugin plugin, Race.Factory raceFactory, ILocalizationService l10n)
     {
         _entryCar = entryCar;
         _sessionManager = sessionManager;
         _entryCarManager = entryCarManager;
         _plugin = plugin;
         _raceFactory = raceFactory;
+        _l10n = l10n;
         _entryCar.PositionUpdateReceived += OnPositionUpdateReceived;
         _entryCar.ResetInvoked += OnResetInvoked;
     }
@@ -83,23 +86,23 @@ public class EntryCarRace
         if (currentRace != null)
         {
             if (currentRace.HasStarted)
-                Reply("You are currently in a race.");
+                Reply(_l10n.Get("plugin.race.challenge.self_in_race"));
             else
-                Reply("You have a pending race request.");
+                Reply(_l10n.Get("plugin.race.challenge.self_has_pending"));
         }
         else
         {
             if (car == _entryCar)
-                Reply("You cannot challenge yourself to a race.");
+                Reply(_l10n.Get("plugin.race.challenge.self"));
             else
             {
                 currentRace = _plugin.GetRace(car).CurrentRace;
                 if (currentRace != null)
                 {
                     if (currentRace.HasStarted)
-                        Reply("This car is currently in a race.");
+                        Reply(_l10n.Get("plugin.race.challenge.target_in_race"));
                     else
-                        Reply("This car has a pending race request.");
+                        Reply(_l10n.Get("plugin.race.challenge.target_has_pending"));
                 }
                 else
                 {
@@ -107,12 +110,12 @@ public class EntryCarRace
                     CurrentRace = currentRace;
                     _plugin.GetRace(car).CurrentRace = currentRace;
 
-                    _entryCar.Client?.SendChatMessage($"You have challenged {car.Client?.Name} to a race.");
+                    _entryCar.Client?.SendChatMessage(_l10n.Get("plugin.race.challenge.sent", new { name = car.Client?.Name }));
 
                     if (lineUpRequired)
-                        car.Client?.SendChatMessage($"{_entryCar.Client?.Name} has challenged you to a race. Send /accept within 10 seconds to accept.");
+                        car.Client?.SendChatMessage(_l10n.Get("plugin.race.challenge.received_lineup", new { name = _entryCar.Client?.Name }));
                     else
-                        car.Client?.SendChatMessage($"{_entryCar.Client?.Name} has challenged you to a race. Flash your hazard lights or send /accept within 10 seconds to accept.");
+                        car.Client?.SendChatMessage(_l10n.Get("plugin.race.challenge.received_flash", new { name = _entryCar.Client?.Name }));
 
                     _ = Task.Delay(10000).ContinueWith(_ =>
                     {
@@ -121,7 +124,7 @@ public class EntryCarRace
                             CurrentRace = null;
                             _plugin.GetRace(car).CurrentRace = null;
 
-                            var timeoutMessage = "Race request has timed out.";
+                            var timeoutMessage = _l10n.Get("plugin.race.challenge.timeout");
                             _entryCar.Client?.SendChatMessage(timeoutMessage);
                             car.Client?.SendChatMessage(timeoutMessage);
                         }

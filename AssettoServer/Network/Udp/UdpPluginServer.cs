@@ -13,6 +13,7 @@ using AssettoServer.Shared.Network.Packets;
 using AssettoServer.Shared.Network.Packets.Outgoing;
 using AssettoServer.Shared.Network.Packets.Shared;
 using AssettoServer.Shared.Network.Packets.UdpPlugin;
+using AssettoServer.Shared.Services;
 using AssettoServer.Shared.Utils;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -31,6 +32,7 @@ public class UdpPluginServer : BackgroundService
     private readonly EntryCarManager _entryCarManager;
     private readonly SessionManager _sessionManager;
     private readonly WeatherManager _weatherManager;
+    private readonly ILocalizationService _l10n;
     private readonly SocketAddress _inAddress;
     private readonly SocketAddress _outAddress;
     private readonly Socket _socket;
@@ -43,13 +45,15 @@ public class UdpPluginServer : BackgroundService
         WeatherManager weatherManager,
         ACServerConfiguration configuration,
         EntryCarManager entryCarManager,
-        ChatService chatService)
+        ChatService chatService,
+        ILocalizationService l10n)
     {
         _configuration = configuration;
         _chatService = chatService;
         _entryCarManager = entryCarManager;
         _sessionManager = sessionManager;
         _weatherManager = weatherManager;
+        _l10n = l10n;
 
         // lets check if we should enable the plugin server
         if (configuration.Server.UdpPluginAddress == null || _configuration.Server.UdpPluginLocalPort == 0)
@@ -292,7 +296,7 @@ public class UdpPluginServer : BackgroundService
                     byte sessionId = packetReader.Read<byte>();
                     if (_entryCarManager.ConnectedCars.TryGetValue(sessionId, out EntryCar? car))
                     {
-                        _ = Task.Run(() => _entryCarManager.KickAsync(car.Client, "You have been kicked."));
+                        _ = Task.Run(() => _entryCarManager.KickAsync(car.Client, _l10n.Get("kick.plugin_default")));
                     }
                     else
                     {

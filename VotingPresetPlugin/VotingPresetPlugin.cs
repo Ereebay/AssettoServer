@@ -3,6 +3,7 @@ using AssettoServer.Commands.Contexts;
 using AssettoServer.Network.Tcp;
 using AssettoServer.Server;
 using AssettoServer.Server.Configuration;
+using AssettoServer.Shared.Services;
 using AssettoServer.Utils;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -15,7 +16,8 @@ public class VotingPresetPlugin : BackgroundService
     private readonly EntryCarManager _entryCarManager;
     private readonly PresetManager _presetManager;
     private readonly VotingPresetConfiguration _configuration;
-    
+    private readonly ILocalizationService _l10n;
+
     private readonly List<PresetType> _votePresets;
     private readonly List<ACTcpClient> _alreadyVoted = [];
     private readonly List<PresetChoice> _availablePresets = [];
@@ -40,11 +42,16 @@ public class VotingPresetPlugin : BackgroundService
         EntryCarManager entryCarManager,
         PresetManager presetManager,
         CSPServerScriptProvider scriptProvider,
-        CSPFeatureManager cspFeatureManager)
+        CSPFeatureManager cspFeatureManager,
+        ILocalizationService l10n)
     {
         _configuration = configuration;
         _entryCarManager = entryCarManager;
         _presetManager = presetManager;
+        _l10n = l10n;
+
+        var pluginDir = Path.GetDirectoryName(typeof(VotingPresetPlugin).Assembly.Location)!;
+        _l10n.RegisterSource(Path.Combine(pluginDir, "lang"), "votepreset");
 
         _votePresets = presetConfigurationManager.VotingPresetTypes;
         _adminPresets = presetConfigurationManager.AllPresetTypes;
@@ -91,18 +98,18 @@ public class VotingPresetPlugin : BackgroundService
 
     internal void ListAllPresets(BaseCommandContext context)
     {
-        context.Reply("List of all presets:");
+        context.Reply(_l10n.Get("plugin.votepreset.cmd.list_header"));
         for (int i = 0; i < _adminPresets.Count; i++)
         {
             var pt = _adminPresets[i];
-            context.Reply($" /presetuse {i} - {pt.Name}");
+            context.Reply(_l10n.Get("plugin.votepreset.cmd.list_item", new { index = i, name = pt.Name }));
         }
     }
 
     internal void GetPreset(BaseCommandContext context)
     {
         Log.Information("Current preset: {Name} - {PresetFolder}", _presetManager.CurrentPreset.Type!.Name, _presetManager.CurrentPreset.Type!.PresetFolder);
-        context.Reply($"Current preset: {_presetManager.CurrentPreset.Type!.Name} - {_presetManager.CurrentPreset.Type!.PresetFolder}");
+        context.Reply(_l10n.Get("plugin.votepreset.cmd.current", new { name = _presetManager.CurrentPreset.Type!.Name, folder = _presetManager.CurrentPreset.Type!.PresetFolder }));
     }
 
     internal void SetPreset(BaseCommandContext context, int choice)
@@ -112,7 +119,7 @@ public class VotingPresetPlugin : BackgroundService
         if (choice < 0 && choice >= _adminPresets.Count)
         {
             Log.Information("Invalid preset choice");
-            context.Reply("Invalid preset choice.");
+            context.Reply(_l10n.Get("plugin.votepreset.cmd.invalid_preset"));
 
             return;
         }
@@ -122,11 +129,11 @@ public class VotingPresetPlugin : BackgroundService
         if (last.Type!.Equals(next))
         {
             Log.Information("No change made, admin tried setting the current preset");
-            context.Reply("No change made, you tried setting the current preset.");
+            context.Reply(_l10n.Get("plugin.votepreset.cmd.no_change"));
         }
         else
         {
-            context.Reply($"Switching to preset: {next.Name}");
+            context.Reply(_l10n.Get("plugin.votepreset.cmd.switching", new { name = next.Name }));
             _ = AdminPreset(new PresetData(_presetManager.CurrentPreset.Type, next)
             {
                 TransitionDuration = _configuration.TransitionDurationSeconds,
@@ -143,7 +150,7 @@ public class VotingPresetPlugin : BackgroundService
         {
             next = _adminPresets[Random.Shared.Next(_adminPresets.Count)];
         } while (last.Type!.Equals(next));
-        context.Reply($"Switching to random preset: {next.Name}");
+        context.Reply(_l10n.Get("plugin.votepreset.cmd.switching_random", new { name = next.Name }));
         _ = AdminPreset(new PresetData(_presetManager.CurrentPreset.Type, next)
         {
             TransitionDuration = _configuration.TransitionDurationSeconds,
@@ -154,19 +161,19 @@ public class VotingPresetPlugin : BackgroundService
     {
         if (!_votingOpen)
         {
-            context.Reply("There is no ongoing track vote.");
+            context.Reply(_l10n.Get("plugin.votepreset.cmd.no_vote"));
             return;
         }
 
         if (choice >= _availablePresets.Count || choice < 0)
         {
-            context.Reply("Invalid choice.");
+            context.Reply(_l10n.Get("plugin.votepreset.cmd.invalid_choice"));
             return;
         }
         
         if (_alreadyVoted.Contains(context.Client))
         {
-            context.Reply("You voted already.");
+            context.Reply(_l10n.Get("plugin.votepreset.cmd.already_voted"));
             return;
         }
 
@@ -175,7 +182,7 @@ public class VotingPresetPlugin : BackgroundService
         var votedPreset = _availablePresets[choice];
         votedPreset.Votes++;
 
-        context.Reply($"Your vote for {votedPreset.Preset!.Name} has been counted.");
+        context.Reply(_l10n.Get("plugin.votepreset.cmd.vote_counted", new { name = votedPreset.Preset!.Name }));
     }
 
     internal void StartVote(BaseCommandContext context)
@@ -183,7 +190,7 @@ public class VotingPresetPlugin : BackgroundService
 
         if (_voteStarted)
         {
-            context.Reply("Vote already ongoing.");
+            context.Reply(_l10n.Get("plugin.votepreset.cmd.already_ongoing"));
             return;
         }
         
@@ -204,19 +211,19 @@ public class VotingPresetPlugin : BackgroundService
     internal void FinishVote(BaseCommandContext context)
     {
         _finishVote = 1;
-        context.Reply("Finishing vote.");
+        context.Reply(_l10n.Get("plugin.votepreset.cmd.finishing"));
     }
     
     internal void CancelVote(BaseCommandContext context)
     {
         _finishVote = -1;
-        context.Reply("Canceling vote.");
+        context.Reply(_l10n.Get("plugin.votepreset.cmd.canceling"));
     }
     
     internal void ExtendVote(BaseCommandContext context, int seconds)
     {
         _extendVotingSeconds += seconds;
-        context.Reply($"Extending vote for {seconds} more seconds.");
+        context.Reply(_l10n.Get("plugin.votepreset.cmd.extending", new { seconds }));
     }
 
     private async Task<bool> WaitVoting(CancellationToken stoppingToken)
@@ -278,14 +285,14 @@ public class VotingPresetPlugin : BackgroundService
         }
 
         if (_configuration.EnableVote || manualVote)
-            _entryCarManager.BroadcastChat("Vote for next track:");
+            _entryCarManager.BroadcastChat(_l10n.Get("plugin.votepreset.broadcast.header"));
         
         if (_configuration.EnableStayOnTrack)
         {
             _availablePresets.Add(new PresetChoice { Preset = last.Type, Votes = 0 });
             if (_configuration.EnableVote || manualVote)
             {
-                _entryCarManager.BroadcastChat(" /vt 0 - Stay on current track.");
+                _entryCarManager.BroadcastChat(_l10n.Get("plugin.votepreset.broadcast.stay_option"));
             }
         }
         for (int i = _availablePresets.Count; i < _configuration.VoteChoices; i++)
@@ -298,7 +305,7 @@ public class VotingPresetPlugin : BackgroundService
 
             if (_configuration.EnableVote || manualVote)
             {
-                _entryCarManager.BroadcastChat($" /vt {i} - {nextPreset.Name}");
+                _entryCarManager.BroadcastChat(_l10n.Get("plugin.votepreset.broadcast.option", new { index = i, name = nextPreset.Name }));
             }
         }
 
@@ -315,14 +322,14 @@ public class VotingPresetPlugin : BackgroundService
 
         if (last.Type!.Equals(winner.Preset!) || (maxVotes == 0 && !_configuration.ChangePresetWithoutVotes))
         {
-            _entryCarManager.BroadcastChat($"Track vote ended. Staying on track for {_configuration.IntervalMinutes} more minutes.");
+            _entryCarManager.BroadcastChat(_l10n.Get("plugin.votepreset.broadcast.ended_stay", new { minutes = _configuration.IntervalMinutes }));
         }
         else
         {
-            _entryCarManager.BroadcastChat($"Track vote ended. Next track: {winner.Preset!.Name} - {winner.Votes} votes");
-            _entryCarManager.BroadcastChat($"Track will change in {(_configuration.TransitionDelaySeconds < 60 ? 
-                    $"{_configuration.TransitionDelaySeconds} second(s)" :
-                    $"{(int)Math.Ceiling(_configuration.TransitionDelaySeconds / 60.0)} minute(s)")}.");
+            _entryCarManager.BroadcastChat(_l10n.Get("plugin.votepreset.broadcast.ended_next", new { name = winner.Preset!.Name, votes = winner.Votes }));
+            _entryCarManager.BroadcastChat(_configuration.TransitionDelaySeconds < 60
+                ? _l10n.Get("plugin.votepreset.broadcast.change_in_seconds", new { seconds = _configuration.TransitionDelaySeconds })
+                : _l10n.Get("plugin.votepreset.broadcast.change_in_minutes", new { minutes = (int)Math.Ceiling(_configuration.TransitionDelaySeconds / 60.0) }));
 
             await Task.Delay(_configuration.TransitionDelayMilliseconds, stoppingToken);
 
@@ -340,10 +347,10 @@ public class VotingPresetPlugin : BackgroundService
         {
             if (preset.Type!.Equals(preset.UpcomingType!)) return;
             Log.Information("Next preset: {Preset}", preset.UpcomingType!.Name);
-            _entryCarManager.BroadcastChat($"Next track: {preset.UpcomingType!.Name}");
-            _entryCarManager.BroadcastChat($"Track will change in {(_configuration.TransitionDelaySeconds < 60 ? 
-                    $"{_configuration.TransitionDelaySeconds} second(s)" :
-                    $"{(int)Math.Ceiling(_configuration.TransitionDelaySeconds / 60.0)} minute(s)")}.");
+            _entryCarManager.BroadcastChat(_l10n.Get("plugin.votepreset.broadcast.next_track", new { name = preset.UpcomingType!.Name }));
+            _entryCarManager.BroadcastChat(_configuration.TransitionDelaySeconds < 60
+                ? _l10n.Get("plugin.votepreset.broadcast.change_in_seconds", new { seconds = _configuration.TransitionDelaySeconds })
+                : _l10n.Get("plugin.votepreset.broadcast.change_in_minutes", new { minutes = (int)Math.Ceiling(_configuration.TransitionDelaySeconds / 60.0) }));
 
             await Task.Delay(_configuration.TransitionDelayMilliseconds);
 

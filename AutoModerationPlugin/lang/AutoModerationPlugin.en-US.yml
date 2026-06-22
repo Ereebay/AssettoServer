@@ -1,0 +1,16 @@
+locale: en-US
+strings:
+  plugin.automod.reason.no_lights: "driving without lights"
+  plugin.automod.reason.wrong_way: "driving the wrong way"
+  plugin.automod.reason.blocking: "blocking the road"
+  plugin.automod.warning.no_lights: "It is currently night, please turn on your lights or you will be kicked."
+  plugin.automod.warning.wrong_way: "You are driving the wrong way! Turn around or you will be kicked."
+  plugin.automod.warning.blocking: "You are blocking the road! Please move or teleport to pits, or you will be kicked."
+  plugin.automod.reason.afk: "being AFK"
+  plugin.automod.reason.high_ping: "high ping"
+  plugin.automod.warning.afk: "You will be kicked in 1 minute for being AFK."
+  plugin.automod.warning.high_ping: "You have a high ping, please fix your network connection or you will be kicked."
+  plugin.automod.warning.no_lights_teleport: "It is currently night, please turn on your lights or you will be teleported to pits."
+  plugin.automod.warning.wrong_way_teleport: "You are driving the wrong way! Turn around or you will be teleported to pits."
+  plugin.automod.warning.blocking_teleport: "You are blocking the road! Please move or you will be teleported to pits."
+  plugin.automod.teleported: "You have been teleported to the pits for {reason}."

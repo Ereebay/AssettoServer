@@ -4,7 +4,9 @@ using System.IO;
 using System.Text;
 using AssettoServer.Network.Tcp;
 using AssettoServer.Server.Configuration;
+using AssettoServer.Server.Lua;
 using AssettoServer.Server.UserGroup;
+using AssettoServer.Shared.Services;
 using IniParser.Model;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc;
@@ -73,8 +75,18 @@ public class CSPServerScriptProvider
         AddScript(bytes, debugFilename, configuration);
     }
 
-    public virtual void AddScript(byte[] script, string? debugFilename = null, Dictionary<string, object>? configuration = null) 
+    public virtual void AddScript(byte[] script, string? debugFilename = null, Dictionary<string, object>? configuration = null)
         => AddScriptInternal(() => new FileContentResult(script, "text/x-lua") { FileDownloadName = debugFilename }, debugFilename, configuration);
+
+    /// <summary>
+    /// Adds a CSP Lua script and localizes its <c>tr("key")</c> calls for the active <c>ServerLocale</c> before
+    /// serving it. Use this instead of <see cref="AddScript(string,string,Dictionary{string,object})"/> for any
+    /// script that draws player-visible text. The script should keep a one-line debug fallback
+    /// (<c>local tr = tr or function(k, a) return k end</c>) so it still runs when CSP loads it locally in Debug
+    /// builds, which bypasses this server-side injection.
+    /// </summary>
+    public virtual void AddLocalizedScript(string script, ILocalizationService localization, string? debugFilename = null, Dictionary<string, object>? configuration = null)
+        => AddScript(LuaLocalizer.Inject(script, localization), debugFilename, configuration);
 
     private string PrepareScriptSection(string address, string? debugFilename = null, Dictionary<string, object>? configuration = null)
     {

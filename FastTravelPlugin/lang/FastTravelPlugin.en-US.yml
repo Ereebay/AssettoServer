@@ -1,0 +1,3 @@
+locale: en-US
+strings:
+  plugin.fasttravel.hint_press_m: "Press M key to FastTravel"

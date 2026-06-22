@@ -1,0 +1,4 @@
+locale: zh-CN
+fallback: en-US
+strings:
+  plugin.fasttravel.hint_press_m: "按 M 键快速传送"

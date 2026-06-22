@@ -6,6 +6,7 @@ using AssettoServer.Server;
 using AssettoServer.Server.Configuration;
 using AssettoServer.Server.GeoParams;
 using AssettoServer.Shared.Discord;
+using AssettoServer.Shared.Services;
 using CSharpDiscordWebhook.NET.Discord;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -32,13 +33,17 @@ public class ReportPlugin : IHostedService
         ChatService chatService,
         CSPServerExtraOptions cspServerExtraOptions,
         ACServerConfiguration serverConfiguration,
-        GeoParamsManager geoParamsManager)
+        GeoParamsManager geoParamsManager,
+        ILocalizationService l10n)
     {
         _configuration = configuration;
         _entryCarManager = entryCarManager;
         _cspServerExtraOptions = cspServerExtraOptions;
         _serverConfiguration = serverConfiguration;
         _geoParamsManager = geoParamsManager;
+
+        var pluginDir = Path.GetDirectoryName(typeof(ReportPlugin).Assembly.Location)!;
+        l10n.RegisterSource(Path.Combine(pluginDir, "lang"), "report");
 
         _entryCarManager.ClientConnected += (sender, _) =>  sender.FirstUpdateSent += OnClientFirstUpdateSent;
         _entryCarManager.ClientDisconnected += OnClientDisconnected;

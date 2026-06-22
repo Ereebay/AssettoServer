@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using AssettoServer.Server;
+using AssettoServer.Shared.Services;
 using TagModePlugin.Packets;
 
 namespace TagModePlugin;
@@ -10,17 +11,19 @@ public class EntryCarTagMode
     private readonly TagModeConfiguration _configuration;
     private readonly TagModePlugin _plugin;
     private readonly EntryCar _entryCar;
+    private readonly ILocalizationService _l10n;
     public bool IsTagged { get; private set; } = false;
 
     public bool IsConnected => _entryCar.Client is { HasSentFirstUpdate: true };
     public Color CurrentColor { get; private set; } = Color.Empty;
 
-    public EntryCarTagMode(EntryCar entryCar, EntryCarManager entryCarManager, TagModeConfiguration configuration, TagModePlugin plugin)
+    public EntryCarTagMode(EntryCar entryCar, EntryCarManager entryCarManager, TagModeConfiguration configuration, TagModePlugin plugin, ILocalizationService l10n)
     {
         _entryCar = entryCar;
         _entryCarManager = entryCarManager;
         _configuration = configuration;
         _plugin = plugin;
+        _l10n = l10n;
     }
 
     public void OnDisconnecting()
@@ -68,7 +71,7 @@ public class EntryCarTagMode
         if (!IsTagged) return;
         
         UpdateColor(_plugin.TaggedColor);
-        _entryCar.Client.SendChatMessage("You are now a tagger.");
+        _entryCar.Client.SendChatMessage(_l10n.Get("plugin.tag.now_tagger"));
         _entryCar.Logger.Information("{Player} is now a tagger", _entryCar.Client.Name);
     }
 

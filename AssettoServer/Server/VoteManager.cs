@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AssettoServer.Network.Tcp;
 using AssettoServer.Server.Configuration;
 using AssettoServer.Shared.Network.Packets.Outgoing;
+using AssettoServer.Shared.Services;
 
 namespace AssettoServer.Server;
 
@@ -13,14 +14,16 @@ public class VoteManager
     private readonly ACServerConfiguration _configuration;
     private readonly EntryCarManager _entryCarManager;
     private readonly SessionManager _sessionManager;
+    private readonly ILocalizationService _l10n;
 
     private VoteState? _state;
-    
-    public VoteManager(ACServerConfiguration configuration, EntryCarManager entryCarManager, SessionManager sessionManager)
+
+    public VoteManager(ACServerConfiguration configuration, EntryCarManager entryCarManager, SessionManager sessionManager, ILocalizationService l10n)
     {
         _configuration = configuration;
         _entryCarManager = entryCarManager;
         _sessionManager = sessionManager;
+        _l10n = l10n;
 
         _entryCarManager.ClientDisconnected += OnClientDisconnected;
     }
@@ -79,8 +82,8 @@ public class VoteManager
                     if (client == null) return;
                     if (client.IsAdministrator) return; 
                     await _entryCarManager.KickAsync(client, KickReason.VoteKicked, "Kicked through vote",
-                            "You have been kicked through vote",
-                            $"{client.Name} has been kicked from the server through vote.");
+                            _l10n.Get("vote.kick.self"),
+                            _l10n.Get("vote.kick.broadcast", new { name = client.Name }));
                     break;
                 case VoteType.NextSession:
                     _sessionManager.NextSession();

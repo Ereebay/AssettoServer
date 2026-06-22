@@ -1,0 +1,10 @@
+locale: en-US
+strings:
+  plugin.voteweather.cmd.no_vote: "There is no ongoing weather vote."
+  plugin.voteweather.cmd.invalid_choice: "Invalid choice."
+  plugin.voteweather.cmd.already_voted: "You voted already."
+  plugin.voteweather.cmd.vote_counted: "Your vote for {weather} has been counted."
+  plugin.voteweather.broadcast.header: "Vote for next weather:"
+  plugin.voteweather.broadcast.option: " /w {index} - {weather}"
+  plugin.voteweather.broadcast.result: "Weather vote ended. Next weather: {weather}"
+  plugin.voteweather.no_votes: "Weather vote ended without any votes cast. Not changing weather."

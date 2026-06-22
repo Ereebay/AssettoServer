@@ -1,0 +1,17 @@
+locale: zh-CN
+fallback: en-US
+strings:
+  plugin.automod.reason.no_lights: "未开车灯"
+  plugin.automod.reason.wrong_way: "逆向行驶"
+  plugin.automod.reason.blocking: "阻塞道路"
+  plugin.automod.warning.no_lights: "现在是夜间，请打开车灯，否则你将被踢出。"
+  plugin.automod.warning.wrong_way: "你正在逆向行驶！请掉头，否则你将被踢出。"
+  plugin.automod.warning.blocking: "你正在阻塞道路！请移动或传送回维修区，否则你将被踢出。"
+  plugin.automod.reason.afk: "挂机"
+  plugin.automod.reason.high_ping: "延迟过高"
+  plugin.automod.warning.afk: "你将在 1 分钟后因挂机被踢出。"
+  plugin.automod.warning.high_ping: "你的网络延迟过高，请修复网络连接，否则你将被踢出。"
+  plugin.automod.warning.no_lights_teleport: "现在是夜间，请打开车灯，否则你将被传送回维修区。"
+  plugin.automod.warning.wrong_way_teleport: "你正在逆向行驶！请掉头，否则你将被传送回维修区。"
+  plugin.automod.warning.blocking_teleport: "你正在阻塞道路！请移动，否则你将被传送回维修区。"
+  plugin.automod.teleported: "你已因{reason}被传送回维修区。"

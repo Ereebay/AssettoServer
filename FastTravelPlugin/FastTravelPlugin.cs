@@ -5,6 +5,7 @@ using AssettoServer.Network.Tcp;
 using AssettoServer.Server;
 using AssettoServer.Server.Ai.Splines;
 using AssettoServer.Server.Configuration;
+using AssettoServer.Shared.Services;
 using AssettoServer.Utils;
 using FastTravelPlugin.Packets;
 using Microsoft.Extensions.Hosting;
@@ -19,6 +20,7 @@ public class FastTravelPlugin : IHostedService
         ACServerConfiguration serverConfiguration,
         CSPServerScriptProvider scriptProvider,
         CSPClientMessageTypeManager cspClientMessageTypeManager,
+        ILocalizationService l10n,
         AiSpline? aiSpline = null)
     {
         _aiSpline = aiSpline ?? throw new ConfigurationException("FastTravelPlugin does not work with AI traffic disabled");
@@ -38,11 +40,14 @@ public class FastTravelPlugin : IHostedService
             throw new ConfigurationException("FastTravelPlugin requires ClientMessages to be enabled");
         }
 
-        var luaPath = Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "lua", "fasttravel.lua");
+        var pluginDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+        l10n.RegisterSource(Path.Combine(pluginDir, "lang"), "fasttravel");
+
+        var luaPath = Path.Join(pluginDir, "lua", "fasttravel.lua");
 
         using var streamReader = new StreamReader(luaPath);
-        var fasttravelScript = streamReader.ReadToEnd();
-        scriptProvider.AddScript(fasttravelScript, "fasttravel.lua", new Dictionary<string, object>
+        // Localize the in-game CSP UI for the active ServerLocale before serving it.
+        scriptProvider.AddLocalizedScript(streamReader.ReadToEnd(), l10n, "fasttravel.lua", new Dictionary<string, object>
         {
             ["mapFixedTargetPosition"] = $"\"{JsonSerializer.Serialize(configuration.MapFixedTargetPosition)}\"",
             ["mapZoomValues"] = $"\"{JsonSerializer.Serialize(configuration.MapZoomValues)}\"",

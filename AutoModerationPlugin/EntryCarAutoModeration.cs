@@ -6,6 +6,7 @@ using AssettoServer.Server.Configuration;
 using AssettoServer.Server.Weather;
 using AssettoServer.Shared.Network.Packets.Incoming;
 using AssettoServer.Shared.Network.Packets.Outgoing;
+using AssettoServer.Shared.Services;
 using AutoModerationPlugin.Packets;
 
 namespace AutoModerationPlugin;
@@ -46,6 +47,7 @@ public class EntryCarAutoModeration
     private readonly EntryCarManager _entryCarManager;
     private readonly WeatherManager _weatherManager;
     private readonly SessionManager _sessionManager;
+    private readonly ILocalizationService _l10n;
     private readonly float _laneRadiusSquared;
     
     public EntryCarAutoModeration(EntryCar entryCar,
@@ -54,6 +56,7 @@ public class EntryCarAutoModeration
         WeatherManager weatherManager,
         SessionManager sessionManager,
         ACServerConfiguration serverConfiguration,
+        ILocalizationService l10n,
         AiSpline? aiSpline = null)
     {
         _entryCar = entryCar;
@@ -62,6 +65,7 @@ public class EntryCarAutoModeration
         _weatherManager = weatherManager;
         _sessionManager = sessionManager;
         _serverConfiguration = serverConfiguration;
+        _l10n = l10n;
         _aiSpline = aiSpline;
         _entryCar.ResetInvoked += OnResetInvoked;
         if (_configuration.AfkPenalty is { Enabled: true, Behavior: AfkPenaltyBehavior.MinimumSpeed })
@@ -151,11 +155,11 @@ public class EntryCarAutoModeration
             if (!HasSentAfkWarning)
             {
                 HasSentAfkWarning = true;
-                client.SendChatMessage("You will be kicked in 1 minute for being AFK.");
+                client.SendChatMessage(_l10n.Get("plugin.automod.warning.afk"));
             }
             else if (afkTime > _configuration.AfkPenalty.DurationMilliseconds)
             {
-                _ = _entryCarManager.KickAsync(client, "being AFK");
+                _ = _entryCarManager.KickAsync(client, _l10n.Get("plugin.automod.reason.afk"));
             }
         }
         else
@@ -174,12 +178,12 @@ public class EntryCarAutoModeration
                             
             if (HighPingSeconds > _configuration.HighPingPenalty.DurationSeconds)
             {
-                _ = _entryCarManager.KickAsync(client, "high ping");
+                _ = _entryCarManager.KickAsync(client, _l10n.Get("plugin.automod.reason.high_ping"));
             }
             else if (!HasSentHighPingWarning && HighPingSeconds > _configuration.HighPingPenalty.DurationSeconds / 2)
             {
                 HasSentHighPingWarning = true;
-                client.SendChatMessage("You have a high ping, please fix your network connection or you will be kicked.");
+                client.SendChatMessage(_l10n.Get("plugin.automod.warning.high_ping"));
             }
         }
         else
@@ -208,20 +212,20 @@ public class EntryCarAutoModeration
             {
                 if (NoLightsPitCount < _configuration.NoLightsPenalty.PitsBeforeKick)
                 {
-                    TeleportToPits(client, "driving without lights");
+                    TeleportToPits(client, _l10n.Get("plugin.automod.reason.no_lights"));
                     NoLightsPitCount++;
                 }
                 else
                 {
-                    _ = _entryCarManager.KickAsync(client, "driving without lights");
+                    _ = _entryCarManager.KickAsync(client, _l10n.Get("plugin.automod.reason.no_lights"));
                 }
             }
             else if (!HasSentNoLightWarning && NoLightSeconds > _configuration.NoLightsPenalty.DurationSeconds / 2)
             {
                 HasSentNoLightWarning = true;
                 var message = NoLightsPitCount < _configuration.NoLightsPenalty.PitsBeforeKick
-                    ? "It is currently night, please turn on your lights or you will be teleported to pits."
-                    : "It is currently night, please turn on your lights or you will be kicked.";
+                    ? _l10n.Get("plugin.automod.warning.no_lights_teleport")
+                    : _l10n.Get("plugin.automod.warning.no_lights");
                 client.SendChatMessage(message);
             }
         }
@@ -249,20 +253,20 @@ public class EntryCarAutoModeration
             {
                 if (WrongWayPitCount < _configuration.WrongWayPenalty.PitsBeforeKick)
                 {
-                    TeleportToPits(client, "driving the wrong way");
+                    TeleportToPits(client, _l10n.Get("plugin.automod.reason.wrong_way"));
                     WrongWayPitCount++;
                 }
                 else
                 {
-                    _ = _entryCarManager.KickAsync(client, "driving the wrong way");
+                    _ = _entryCarManager.KickAsync(client, _l10n.Get("plugin.automod.reason.wrong_way"));
                 }
             }
             else if (!HasSentWrongWayWarning && WrongWaySeconds > _configuration.WrongWayPenalty.DurationSeconds / 2)
             {
                 HasSentWrongWayWarning = true;
                 var message = WrongWayPitCount < _configuration.WrongWayPenalty.PitsBeforeKick
-                    ? "You are driving the wrong way! Turn around or you will be teleported to pits."
-                    : "You are driving the wrong way! Turn around or you will be kicked.";
+                    ? _l10n.Get("plugin.automod.warning.wrong_way_teleport")
+                    : _l10n.Get("plugin.automod.warning.wrong_way");
                 client.SendChatMessage(message);
             }
         }
@@ -288,20 +292,20 @@ public class EntryCarAutoModeration
             {
                 if (BlockingRoadPitCount < _configuration.BlockingRoadPenalty.PitsBeforeKick)
                 {
-                    TeleportToPits(client, "blocking the road");
+                    TeleportToPits(client, _l10n.Get("plugin.automod.reason.blocking"));
                     BlockingRoadPitCount++;
                 }
                 else
                 {
-                    _ = _entryCarManager.KickAsync(client, "blocking the road");
+                    _ = _entryCarManager.KickAsync(client, _l10n.Get("plugin.automod.reason.blocking"));
                 }
             }
             else if (!HasSentBlockingRoadWarning && BlockingRoadSeconds > _configuration.BlockingRoadPenalty.DurationSeconds / 2)
             {
                 HasSentBlockingRoadWarning = true;
                 var message = BlockingRoadPitCount < _configuration.BlockingRoadPenalty.PitsBeforeKick
-                    ? "You are blocking the road! Please move or you will be teleported to pits."
-                    : "You are blocking the road! Please move or teleport to pits, or you will be kicked.";
+                    ? _l10n.Get("plugin.automod.warning.blocking_teleport")
+                    : _l10n.Get("plugin.automod.warning.blocking");
                 client.SendChatMessage(message);
             }
         }
@@ -329,6 +333,6 @@ public class EntryCarAutoModeration
     private void TeleportToPits(ACTcpClient player, string reason)
     {
         _sessionManager.SendCurrentSession(player);
-        player.SendChatMessage($"You have been teleported to the pits for {reason}.");
+        player.SendChatMessage(_l10n.Get("plugin.automod.teleported", new { reason }));
     }
 }
