@@ -136,10 +136,17 @@ public partial class EntryCar : IEntryCar<ACTcpClient>
     }
 
     /// <summary>
+    /// Session IDs of clients this car is hidden from. The position broadcast substitutes a far-underground
+    /// point for these observers, making the car invisible to them (touge battle/spectator hiding).
+    /// </summary>
+    public HashSet<byte> HiddenFrom { get; } = new();
+
+    /// <summary>
     /// Only call this function to do a clean reset of this EntryCar, e.g. when a player disconnects
     /// </summary>
     internal void Reset()
     {
+        HiddenFrom.Clear();
         ResetInvoked?.Invoke(this, EventArgs.Empty);
         IsSpectator = false;
         SpectatorMode = 0;
@@ -283,11 +290,14 @@ public partial class EntryCar : IEntryCar<ACTcpClient>
             OtherCarsLastSentUpdateTime[toCar.SessionId] = _sessionManager.ServerTimeMilliseconds;
         }
 
+        // Touge hiding: observers in HiddenFrom receive the car's position far underground, so it is invisible to them.
+        var position = HiddenFrom.Contains(toCar.SessionId) ? new Vector3(0f, -9000f, 0f) : status.Position;
+
         positionUpdateOut = new PositionUpdateOut(SessionId,
             AiControlled ? AiPakSequenceIds[toCar.SessionId]++ : status.PakSequenceId,
             (uint)(status.Timestamp - toCar.TimeOffset),
             Ping,
-            status.Position,
+            position,
             status.Rotation,
             status.Velocity,
             status.TyreAngularSpeed[0],

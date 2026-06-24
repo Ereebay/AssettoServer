@@ -367,3 +367,6 @@ out-win-*
 
 # Jetbrains IDEs
 .idea/
+
+# Touge battle plugin lives in its own repo (Ereebay/TougeBattlePlugin), cloned in here for the ..\AssettoServer refs
+/TougeBattlePlugin/

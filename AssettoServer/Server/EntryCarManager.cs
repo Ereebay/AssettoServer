@@ -143,6 +143,10 @@ public class EntryCarManager
                     BroadcastPacket(new CarDisconnected { SessionId = client.SessionId });
 
                 client.EntryCar.Reset();
+
+                foreach (var car in EntryCars)
+                    car.HiddenFrom.Remove(client.SessionId);
+
                 ClientDisconnected?.Invoke(client, EventArgs.Empty);
             }
         }
