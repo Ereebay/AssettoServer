@@ -144,9 +144,8 @@ public class EntryCarManager
 
                 client.EntryCar.Reset();
 
-                foreach (var car in EntryCars)
-                    car.HiddenFrom.Remove(client.SessionId);
-
+                // No HiddenFrom cleanup needed: the visibility owner rebuilds each car's snapshot every
+                // tick from the connected cars, so a disconnected observer's id drops out on the next tick.
                 ClientDisconnected?.Invoke(client, EventArgs.Empty);
             }
         }

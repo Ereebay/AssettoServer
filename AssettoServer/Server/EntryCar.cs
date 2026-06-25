@@ -135,18 +135,27 @@ public partial class EntryCar : IEntryCar<ACTcpClient>
         });
     }
 
+    private static readonly IReadOnlySet<byte> EmptyHiddenFrom = new HashSet<byte>();
+    private volatile IReadOnlySet<byte> _hiddenFrom = EmptyHiddenFrom;
+
     /// <summary>
     /// Session IDs of clients this car is hidden from. The position broadcast substitutes a far-underground
     /// point for these observers, making the car invisible to them (touge battle/spectator hiding).
+    /// Published as an immutable snapshot by the visibility owner (TougeBattlePlugin) — assign a fresh set
+    /// to update, never mutate a published instance — so the main loop reads it lock-free without tearing.
     /// </summary>
-    public HashSet<byte> HiddenFrom { get; } = new();
+    public IReadOnlySet<byte> HiddenFrom
+    {
+        get => _hiddenFrom;
+        set => _hiddenFrom = value;
+    }
 
     /// <summary>
     /// Only call this function to do a clean reset of this EntryCar, e.g. when a player disconnects
     /// </summary>
     internal void Reset()
     {
-        HiddenFrom.Clear();
+        _hiddenFrom = EmptyHiddenFrom;
         ResetInvoked?.Invoke(this, EventArgs.Empty);
         IsSpectator = false;
         SpectatorMode = 0;
