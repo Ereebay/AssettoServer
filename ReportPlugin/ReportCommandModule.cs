@@ -1,6 +1,5 @@
 ﻿using AssettoServer.Commands;
 using AssettoServer.Commands.Attributes;
-using AssettoServer.Shared.Services;
 using Qmmands;
 
 namespace ReportPlugin;
@@ -8,12 +7,10 @@ namespace ReportPlugin;
 public class ReportCommandModule : ACModuleBase
 {
     private readonly ReportPlugin _plugin;
-    private readonly ILocalizationService _l10n;
 
-    public ReportCommandModule(ReportPlugin plugin, ILocalizationService l10n)
+    public ReportCommandModule(ReportPlugin plugin)
     {
         _plugin = plugin;
-        _l10n = l10n;
     }
 
     [Command("report"), RequireConnectedPlayer]
@@ -23,18 +20,18 @@ public class ReportCommandModule : ACModuleBase
 
         if (report == null)
         {
-            Reply(_l10n.Get("plugin.report.cmd.no_replay"));
+            Reply("No replay submitted! Press Ctrl+Shift+S to send a replay (CSP 0.1.76+ required)");
         }
         else if (report.Submitted)
         {
-            Reply(_l10n.Get("plugin.report.cmd.already_submitted"));
+            Reply("You have already submitted your last replay.");
         }
         else
         {
             Client!.Logger.Information("Report received from {ClientName} ({SessionId}), ID: {Id}, Reason: {Reason}",
                 Client.Name, Client.SessionId, report.Guid, reason);
             await _plugin.SubmitReport(Client, report, reason);
-            Reply(_l10n.Get("plugin.report.cmd.submitted"));
+            Reply("Your report has been submitted.");
             report.Submitted = true;
         }
     }

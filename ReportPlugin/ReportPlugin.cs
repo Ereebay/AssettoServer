@@ -17,7 +17,7 @@ namespace ReportPlugin;
 public class ReportPlugin : CriticalBackgroundService, IAssettoServerAutostart
 {
     internal Guid Key { get; }
-
+    
     private readonly ReportConfiguration _configuration;
     private readonly DiscordWebhook? _webhook;
     private readonly string _serverNameTruncated;
@@ -25,7 +25,6 @@ public class ReportPlugin : CriticalBackgroundService, IAssettoServerAutostart
     private readonly CSPServerExtraOptions _cspServerExtraOptions;
     private readonly GeoParamsManager _geoParamsManager;
     private readonly ACServerConfiguration _serverConfiguration;
-    private readonly ILocalizationService _l10n;
     private readonly Dictionary<ACTcpClient, Replay> _reports = new();
     private readonly ConcurrentQueue<AuditEvent> _events = new();
 
@@ -36,15 +35,13 @@ public class ReportPlugin : CriticalBackgroundService, IAssettoServerAutostart
         CSPServerExtraOptions cspServerExtraOptions,
         ACServerConfiguration serverConfiguration,
         GeoParamsManager geoParamsManager,
-        IHostApplicationLifetime applicationLifetime,
-        ILocalizationService l10n) : base(applicationLifetime)
+        IHostApplicationLifetime applicationLifetime) : base(applicationLifetime)
     {
         _configuration = configuration;
         _entryCarManager = entryCarManager;
         _cspServerExtraOptions = cspServerExtraOptions;
         _serverConfiguration = serverConfiguration;
         _geoParamsManager = geoParamsManager;
-        _l10n = l10n;
 
         _entryCarManager.ClientConnected += (sender, _) =>  sender.FirstUpdateSent += OnClientFirstUpdateSent;
         _entryCarManager.ClientDisconnected += OnClientDisconnected;
@@ -59,12 +56,9 @@ public class ReportPlugin : CriticalBackgroundService, IAssettoServerAutostart
                 Uri = new Uri(_configuration.WebhookUrl)
             };
         }
-
+        
         Key = Guid.NewGuid();
         Directory.CreateDirectory("reports");
-
-        var pluginDir = Path.GetDirectoryName(typeof(ReportPlugin).Assembly.Location)!;
-        _l10n.RegisterSource(Path.Combine(pluginDir, "lang"), "report");
     }
     
     protected override Task ExecuteAsync(CancellationToken stoppingToken)

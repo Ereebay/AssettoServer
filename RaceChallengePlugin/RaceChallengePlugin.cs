@@ -1,4 +1,4 @@
-using AssettoServer.Server;
+﻿using AssettoServer.Server;
 using AssettoServer.Server.Plugin;
 using AssettoServer.Shared.Services;
 using Microsoft.Extensions.Hosting;
@@ -9,17 +9,12 @@ public class RaceChallengePlugin : CriticalBackgroundService, IAssettoServerAuto
 {
     private readonly EntryCarManager _entryCarManager;
     private readonly Func<EntryCar, EntryCarRace> _entryCarRaceFactory;
-    private readonly ILocalizationService _l10n;
     private readonly Dictionary<int, EntryCarRace> _instances = new();
-
-    public RaceChallengePlugin(EntryCarManager entryCarManager, Func<EntryCar, EntryCarRace> entryCarRaceFactory, IHostApplicationLifetime applicationLifetime, ILocalizationService l10n) : base(applicationLifetime)
+    
+    public RaceChallengePlugin(EntryCarManager entryCarManager, Func<EntryCar, EntryCarRace> entryCarRaceFactory, IHostApplicationLifetime applicationLifetime) : base(applicationLifetime)
     {
         _entryCarManager = entryCarManager;
         _entryCarRaceFactory = entryCarRaceFactory;
-        _l10n = l10n;
-
-        var pluginDir = Path.GetDirectoryName(typeof(RaceChallengePlugin).Assembly.Location)!;
-        _l10n.RegisterSource(Path.Combine(pluginDir, "lang"), "race");
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -31,6 +26,6 @@ public class RaceChallengePlugin : CriticalBackgroundService, IAssettoServerAuto
 
         return Task.CompletedTask;
     }
-
+    
     internal EntryCarRace GetRace(EntryCar entryCar) => _instances[entryCar.SessionId];
 }
