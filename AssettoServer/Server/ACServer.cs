@@ -38,7 +38,6 @@ public class ACServer : CriticalBackgroundService
     private readonly ChecksumManager _checksumManager;
     private readonly List<IHostedService> _autostartServices;
     private readonly IHostApplicationLifetime _applicationLifetime;
-    private readonly ILocalizationService _l10n;
 
     /// <summary>
     /// Fires on each server tick in the main loop. Don't do resource intensive / long running stuff in here!
@@ -60,18 +59,16 @@ public class ACServer : CriticalBackgroundService
         CSPServerScriptProvider cspServerScriptProvider,
         IEnumerable<IAssettoServerAutostart> autostartServices,
         KunosLobbyRegistration kunosLobbyRegistration,
-        IHostApplicationLifetime applicationLifetime,
-        ILocalizationService l10n) : base(applicationLifetime)
+        IHostApplicationLifetime applicationLifetime) : base(applicationLifetime)
     {
         Log.Information("Starting server");
-
+            
         _configuration = configuration;
         _sessionManager = sessionManager;
         _entryCarManager = entryCarManager;
         _geoParamsManager = geoParamsManager;
         _checksumManager = checksumManager;
         _applicationLifetime = applicationLifetime;
-        _l10n = l10n;
 
         _autostartServices = new List<IHostedService> { weatherManager, tcpServer, udpServer };
         _autostartServices.AddRange(autostartServices);
@@ -122,7 +119,7 @@ public class ACServer : CriticalBackgroundService
     private void OnApplicationStopping()
     {
         Log.Information("Server shutting down");
-        _entryCarManager.BroadcastPacket(new ChatMessage { SessionId = 255, Message = _l10n.Get("server.shutdown_broadcast") });
+        _entryCarManager.BroadcastPacket(new ChatMessage { SessionId = 255, Message = "*** Server shutting down ***" });
 
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var tasks = new List<Task>();

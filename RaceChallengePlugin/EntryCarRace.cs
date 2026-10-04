@@ -1,10 +1,9 @@
-using System.Numerics;
+﻿using System.Numerics;
 using AssettoServer.Network.Tcp;
 using AssettoServer.Server;
 using AssettoServer.Shared.Network.Packets.Incoming;
 using AssettoServer.Shared.Network.Packets.Outgoing;
 using AssettoServer.Shared.Network.Packets.Shared;
-using AssettoServer.Shared.Services;
 
 namespace RaceChallengePlugin;
 
@@ -15,23 +14,21 @@ public class EntryCarRace
     private readonly RaceChallengePlugin _plugin;
     private readonly EntryCar _entryCar;
     private readonly Race.Factory _raceFactory;
-    private readonly ILocalizationService _l10n;
-
+    
     public int LightFlashCount { get; internal set; }
-
+    
     internal Race? CurrentRace { get; set; }
 
     private long LastLightFlashTime { get; set; }
     private long LastRaceChallengeTime { get; set; }
 
-    public EntryCarRace(EntryCar entryCar, SessionManager sessionManager, EntryCarManager entryCarManager, RaceChallengePlugin plugin, Race.Factory raceFactory, ILocalizationService l10n)
+    public EntryCarRace(EntryCar entryCar, SessionManager sessionManager, EntryCarManager entryCarManager, RaceChallengePlugin plugin, Race.Factory raceFactory)
     {
         _entryCar = entryCar;
         _sessionManager = sessionManager;
         _entryCarManager = entryCarManager;
         _plugin = plugin;
         _raceFactory = raceFactory;
-        _l10n = l10n;
         _entryCar.PositionUpdateReceived += OnPositionUpdateReceived;
         _entryCar.ResetInvoked += OnResetInvoked;
     }
@@ -44,18 +41,18 @@ public class EntryCarRace
     private void OnPositionUpdateReceived(EntryCar sender, in PositionUpdateIn positionUpdate)
     {
         long currentTick = _sessionManager.ServerTimeMilliseconds;
-        if(((_entryCar.Status.StatusFlag & CarStatusFlags.LightsOn) == 0 && (positionUpdate.StatusFlag & CarStatusFlags.LightsOn) != 0)
+        if(((_entryCar.Status.StatusFlag & CarStatusFlags.LightsOn) == 0 && (positionUpdate.StatusFlag & CarStatusFlags.LightsOn) != 0) 
            || ((_entryCar.Status.StatusFlag & CarStatusFlags.HighBeamsOff) == 0 && (positionUpdate.StatusFlag & CarStatusFlags.HighBeamsOff) != 0))
         {
             LastLightFlashTime = currentTick;
             LightFlashCount++;
         }
 
-        if ((_entryCar.Status.StatusFlag & CarStatusFlags.HazardsOn) == 0
+        if ((_entryCar.Status.StatusFlag & CarStatusFlags.HazardsOn) == 0 
             && (positionUpdate.StatusFlag & CarStatusFlags.HazardsOn) != 0
-            && CurrentRace != null
-            && CurrentRace.Challenged == sender
-            && !CurrentRace.HasStarted
+            && CurrentRace != null 
+            && CurrentRace.Challenged == sender 
+            && !CurrentRace.HasStarted 
             && !CurrentRace.LineUpRequired)
         {
             _ = CurrentRace.StartAsync();
@@ -87,23 +84,23 @@ public class EntryCarRace
         if (currentRace != null)
         {
             if (currentRace.HasStarted)
-                Reply(_l10n.Get("plugin.race.challenge.self_in_race"));
+                Reply("You are currently in a race.");
             else
-                Reply(_l10n.Get("plugin.race.challenge.self_has_pending"));
+                Reply("You have a pending race request.");
         }
         else
         {
             if (car == _entryCar)
-                Reply(_l10n.Get("plugin.race.challenge.self"));
+                Reply("You cannot challenge yourself to a race.");
             else
             {
                 currentRace = _plugin.GetRace(car).CurrentRace;
                 if (currentRace != null)
                 {
                     if (currentRace.HasStarted)
-                        Reply(_l10n.Get("plugin.race.challenge.target_in_race"));
+                        Reply("This car is currently in a race.");
                     else
-                        Reply(_l10n.Get("plugin.race.challenge.target_has_pending"));
+                        Reply("This car has a pending race request.");
                 }
                 else
                 {
@@ -111,13 +108,13 @@ public class EntryCarRace
                     CurrentRace = currentRace;
                     _plugin.GetRace(car).CurrentRace = currentRace;
 
-                    _entryCar.Client?.SendPacket(new ChatMessage { SessionId = 255, Message = _l10n.Get("plugin.race.challenge.sent", new { name = car.Client?.Name }) });
+                    _entryCar.Client?.SendPacket(new ChatMessage { SessionId = 255, Message = $"You have challenged {car.Client?.Name} to a race." });
 
                     if (lineUpRequired)
-                        car.Client?.SendPacket(new ChatMessage { SessionId = 255, Message = _l10n.Get("plugin.race.challenge.received_lineup", new { name = _entryCar.Client?.Name }) });
+                        car.Client?.SendPacket(new ChatMessage { SessionId = 255, Message = $"{_entryCar.Client?.Name} has challenged you to a race. Send /accept within 10 seconds to accept." });
                     else
                         car.Client?.SendPacket(new ChatMessage
-                            { SessionId = 255, Message = _l10n.Get("plugin.race.challenge.received_flash", new { name = _entryCar.Client?.Name }) });
+                            { SessionId = 255, Message = $"{_entryCar.Client?.Name} has challenged you to a race. Flash your hazard lights or send /accept within 10 seconds to accept." });
 
                     _ = Task.Delay(10000).ContinueWith(_ =>
                     {
@@ -126,7 +123,7 @@ public class EntryCarRace
                             CurrentRace = null;
                             _plugin.GetRace(car).CurrentRace = null;
 
-                            ChatMessage timeoutMessage = new ChatMessage { SessionId = 255, Message = _l10n.Get("plugin.race.challenge.timeout") };
+                            ChatMessage timeoutMessage = new ChatMessage { SessionId = 255, Message = "Race request has timed out." };
                             _entryCar.Client?.SendPacket(timeoutMessage);
                             car.Client?.SendPacket(timeoutMessage);
                         }

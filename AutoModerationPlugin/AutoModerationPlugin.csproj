@@ -42,11 +42,4 @@
       <Folder Include="Flags" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Content Include="lang\*.yml">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        </Content>
-    </ItemGroup>
-
 </Project>

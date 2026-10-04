@@ -5,7 +5,6 @@ using AssettoServer.Server;
 using AssettoServer.Server.OpenSlotFilters;
 using AssettoServer.Shared.Network.Packets.Incoming;
 using AssettoServer.Shared.Network.Packets.Outgoing.Handshake;
-using AssettoServer.Shared.Services;
 
 namespace WordFilterPlugin;
 
@@ -13,18 +12,13 @@ public class WordFilter : OpenSlotFilterBase
 {
     private readonly EntryCarManager _entryCarManager;
     private readonly WordFilterConfiguration _configuration;
-    private readonly ILocalizationService _l10n;
 
-    public WordFilter(WordFilterConfiguration configuration, EntryCarManager entryCarManager, ChatService chatService, ILocalizationService l10n)
+    public WordFilter(WordFilterConfiguration configuration, EntryCarManager entryCarManager, ChatService chatService)
     {
         _configuration = configuration;
         _entryCarManager = entryCarManager;
-        _l10n = l10n;
-
+        
         chatService.MessageReceived += OnChatMessageReceived;
-
-        var pluginDir = Path.GetDirectoryName(typeof(WordFilter).Assembly.Location)!;
-        _l10n.RegisterSource(Path.Combine(pluginDir, "lang"), "wordfilter");
     }
 
     private void OnChatMessageReceived(ACTcpClient sender, ChatEventArgs args)
@@ -46,7 +40,7 @@ public class WordFilter : OpenSlotFilterBase
     {
         if (_configuration.ProhibitedUsernamePatterns.Any(regex => Regex.Match(request.Name, regex, RegexOptions.IgnoreCase).Success))
         {
-            return Task.FromResult<AuthFailedResponse?>(new AuthFailedResponse(_l10n.Get("plugin.wordfilter.prohibited_username")));
+            return Task.FromResult<AuthFailedResponse?>(new AuthFailedResponse("Prohibited username. Change your Online Name in Settings > Content Manager > Drive > Online Name."));
         }
         
         return base.ShouldAcceptConnectionAsync(client, request);

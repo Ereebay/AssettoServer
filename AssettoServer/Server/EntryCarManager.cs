@@ -11,7 +11,6 @@ using AssettoServer.Server.OpenSlotFilters;
 using AssettoServer.Shared.Network.Packets.Incoming;
 using AssettoServer.Shared.Network.Packets.Outgoing;
 using AssettoServer.Shared.Network.Packets.Shared;
-using AssettoServer.Shared.Services;
 using Serilog;
 
 namespace AssettoServer.Server;
@@ -27,7 +26,6 @@ public class EntryCarManager
     private readonly IAdminService _adminService;
     private readonly SemaphoreSlim _connectSemaphore = new(1, 1);
     private readonly Lazy<OpenSlotFilterChain> _openSlotFilterChain;
-    private readonly ILocalizationService _l10n;
 
     /// <summary>
     /// Fires when a client has secured a slot and established a TCP connection.
@@ -49,24 +47,21 @@ public class EntryCarManager
     /// </summary>
     public event EventHandler<ACTcpClient, EventArgs>? ClientDisconnected;
 
-    public EntryCarManager(ACServerConfiguration configuration, EntryCar.Factory entryCarFactory, IBlacklistService blacklist, IAdminService adminService, Lazy<OpenSlotFilterChain> openSlotFilterChain, ILocalizationService l10n)
+    public EntryCarManager(ACServerConfiguration configuration, EntryCar.Factory entryCarFactory, IBlacklistService blacklist, IAdminService adminService, Lazy<OpenSlotFilterChain> openSlotFilterChain)
     {
         _configuration = configuration;
         _entryCarFactory = entryCarFactory;
         _blacklist = blacklist;
         _adminService = adminService;
         _openSlotFilterChain = openSlotFilterChain;
-        _l10n = l10n;
     }
 
     public async Task KickAsync(ACTcpClient? client, string? reason = null, ACTcpClient? admin = null)
     {
         if (client == null) return;
         
-        string? clientReason = reason != null ? _l10n.Get("kick.self_with_reason", new { reason }) : null;
-        string broadcastReason = reason != null
-            ? _l10n.Get("kick.broadcast_with_reason", new { name = client.Name, reason })
-            : _l10n.Get("kick.broadcast_no_reason", new { name = client.Name });
+        string? clientReason = reason != null ? $"You have been kicked for {reason}" : null;
+        string broadcastReason = reason != null ? $"{client.Name} has been kicked from the server for {reason}." : $"{client.Name} has been kicked from the server.";
 
         await KickAsync(client, KickReason.Kicked, reason, clientReason, broadcastReason, admin);
     }
@@ -75,12 +70,8 @@ public class EntryCarManager
     {
         if (client == null) return;
         
-        string clientReason = reason != null
-            ? _l10n.Get("ban.self_with_reason", new { reason })
-            : _l10n.Get("ban.self_no_reason");
-        string broadcastReason = reason != null
-            ? _l10n.Get("ban.broadcast_with_reason", new { name = client.Name, reason })
-            : _l10n.Get("ban.broadcast_no_reason", new { name = client.Name });
+        string clientReason = reason != null ? $"You have been banned for {reason}" : "You have been banned from the server";
+        string broadcastReason = reason != null ? $"{client.Name} has been banned from the server for {reason}." : $"{client.Name} has been banned from the server.";
 
         await KickAsync(client, KickReason.VoteBlacklisted, reason, clientReason, broadcastReason, admin);
         await _blacklist.AddAsync(client.Guid);

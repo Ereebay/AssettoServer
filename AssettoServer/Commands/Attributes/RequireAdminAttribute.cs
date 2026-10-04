@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using AssettoServer.Commands.Contexts;
 using AssettoServer.Server.Configuration;
 using AssettoServer.Server.UserGroup;
-using AssettoServer.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AssettoServer.Commands.Attributes;
@@ -35,8 +34,7 @@ public class RequireAdminAttribute : CheckAttribute
                     }
                 }
 
-                var l10n = chatContext.Services.GetRequiredService<ILocalizationService>();
-                return CheckResult.Failed(l10n.Get("cmd.permission_denied_admin"));
+                return CheckResult.Failed("You are not an administrator.");
             }
             default:
                 return CheckResult.Failed("Invalid command context.");

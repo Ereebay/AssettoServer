@@ -1,7 +1,6 @@
-using AssettoServer.Commands;
+﻿using AssettoServer.Commands;
 using AssettoServer.Commands.Attributes;
 using AssettoServer.Network.Tcp;
-using AssettoServer.Shared.Services;
 using Qmmands;
 
 namespace RaceChallengePlugin;
@@ -10,12 +9,10 @@ namespace RaceChallengePlugin;
 public class RaceCommandModule : ACModuleBase
 {
     private readonly RaceChallengePlugin _plugin;
-    private readonly ILocalizationService _l10n;
 
-    public RaceCommandModule(RaceChallengePlugin plugin, ILocalizationService l10n)
+    public RaceCommandModule(RaceChallengePlugin plugin)
     {
         _plugin = plugin;
-        _l10n = l10n;
     }
 
     [Command("race"), RequireConnectedPlayer]
@@ -27,9 +24,9 @@ public class RaceCommandModule : ACModuleBase
     {
         var currentRace = _plugin.GetRace(Client!.EntryCar).CurrentRace;
         if (currentRace == null)
-            Reply(_l10n.Get("plugin.race.cmd.accept.no_request"));
+            Reply("You do not have a pending race request.");
         else if (currentRace.HasStarted)
-            Reply(_l10n.Get("plugin.race.cmd.accept.already_started"));
+            Reply("This race has already started.");
         else
             await currentRace.StartAsync();
     }
